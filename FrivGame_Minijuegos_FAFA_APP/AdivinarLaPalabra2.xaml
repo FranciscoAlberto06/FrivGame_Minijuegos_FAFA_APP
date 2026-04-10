@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.AdivinarLaPalabra2"
+             Title="AdivinarLaPalabra2">
+
+
+    <Grid RowDefinitions="*, Auto, Auto" Padding="10" RowSpacing="10" >
+
+        <ScrollView Grid.Row="0" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="10" VerticalOptions="Center">
+                <Grid x:Name="GridTablero" 
+                      HorizontalOptions="Center" 
+                      ColumnSpacing="4" 
+                      RowSpacing="4" />
+
+                <Label x:Name="LabelMensaje" 
+                       HorizontalOptions="Center" 
+                       FontSize="18" 
+                       FontAttributes="Bold"
+                       TextColor="White" 
+                       HorizontalTextAlignment="Center"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="1" 
+              ColumnDefinitions="*, *" 
+              ColumnSpacing="10" 
+              Margin="0,5"
+              HorizontalOptions="Center">
+
+            <Button Grid.Column="0"
+                    x:Name="ButtonReiniciar"
+                    Clicked="RecargarJuego" 
+                    Text="Reiniciar" 
+                    BackgroundColor="Green"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    IsVisible="False"/>
+
+            <Button Grid.Column="1"
+                    x:Name="bSignificado"
+                    Clicked="ConsultarPalabra" 
+                    Text="Significado" 
+                    BackgroundColor="Blue"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    IsVisible="False"/>
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="2" 
+                             x:Name="KeyboardLayout" 
+                             Spacing="4" 
+                             HorizontalOptions="Fill" 
+                             Margin="0,0,0,10" />
+
+        </Grid>
+
+
+</ContentPage>

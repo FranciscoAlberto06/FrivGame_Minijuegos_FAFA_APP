@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.JuegoTopos"
+             Title="JuegoTopos">
+    
+    <Grid>
+
+        <Image 
+        Source="fondo_madera.png" 
+        Aspect="AspectFill" />
+
+        <Grid RowDefinitions="Auto, Auto, *, Auto" Padding="20">
+
+            <Label x:Name="lbPuntaje" 
+               Grid.Row="0"
+               Text="Puntos: 0" 
+               FontSize="24" 
+               HorizontalOptions="Center" 
+               TextColor="White" />
+
+            <Label x:Name="lbCronometro" 
+               Grid.Row="1"
+               Text="00:00" 
+               FontSize="24" 
+               HorizontalOptions="Center" 
+               TextColor="White" />
+
+            <Grid x:Name="TableroJuego"
+              Grid.Row="2"
+              HorizontalOptions="Center"
+              VerticalOptions="Center"
+              ColumnSpacing="10" 
+              RowSpacing="10">
+            </Grid>
+
+            <Button x:Name="bStartStop" 
+                Grid.Row="3"
+                Text="Iniciar"
+                WidthRequest="150" 
+                HeightRequest="50" 
+                HorizontalOptions="Center"
+                Clicked="StartStopClick"/>
+        </Grid>
+    </Grid>
+</ContentPage>

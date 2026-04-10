@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.PageInicioSesion"
+             Title="PageInicioSesion">
+    <Grid>
+        <!-- Fondo degradado -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#1E293B" Offset="0.0" />
+                <GradientStop Color="#0F172A" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid x:Name="SplashContainer"
+              Opacity="1"
+              ZIndex="2">
+
+            <Image
+                x:Name="LogoImage"
+                Source="logo_letrero_proyecto_fafa1.png"
+                WidthRequest="180"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+        </Grid>
+
+        <VerticalStackLayout 
+            x:Name="LoginContainer"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            Spacing="25"
+            Padding="30"
+            WidthRequest="350"
+            Opacity="0">
+            
+
+            <Label 
+                Text="Bienvenido a AbelGame!"
+                FontSize="32"
+                FontAttributes="Bold"
+                TextColor="White"
+                HorizontalOptions="Center"/>
+
+            <Label 
+                Text="Inicia sesión para continuar"
+                FontSize="14"
+                TextColor="#94A3B8"
+                HorizontalOptions="Center"/>
+
+            <!-- Cuadro de login -->
+            <Border 
+                StrokeThickness="0"
+                BackgroundColor="#1E293B"
+                Padding="25"
+                StrokeShape="RoundRectangle 25">
+
+                <VerticalStackLayout Spacing="20">
+
+                    <!-- Email -->
+                    <Entry 
+                        Placeholder="Correo electrónico"
+                        TextColor="White"
+                        PlaceholderColor="#64748B"
+                        BackgroundColor="#0F172A"
+                        HeightRequest="50"
+                        Margin="0"
+                        />
+
+                    <!-- Password -->
+                    <Entry 
+                        Placeholder="Contraseña"
+                        IsPassword="True"
+                        TextColor="White"
+                        PlaceholderColor="#64748B"
+                        BackgroundColor="#0F172A"
+                        HeightRequest="50"
+                        />
+
+                    <!-- Boton -->
+                    <Button 
+                        Text="Iniciar sesión"
+                        HeightRequest="50"
+                        CornerRadius="15"
+                        BackgroundColor="#6366F1"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        Clicked="botonInico"
+                        />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Registro -->
+            <HorizontalStackLayout 
+                HorizontalOptions="Center"
+                Spacing="5">
+
+                <Label 
+                    Text="¿No tienes cuenta?"
+                    TextColor="#94A3B8"/>
+
+                <Label 
+                    Text="Regístrate"
+                    TextColor="#6366F1"
+                    FontAttributes="Bold"/>
+
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

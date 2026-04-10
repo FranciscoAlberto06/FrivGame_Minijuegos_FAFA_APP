@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="FrivGame_Minijuegos_FAFA_APP.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:FrivGame_Minijuegos_FAFA_APP"
+    Title="FrivGame_Minijuegos_FAFA_APP">
+
+
+
+
+    <FlyoutItem Title="Inicio De Sesion">
+        <ShellContent 
+    Title=""
+    ContentTemplate="{DataTemplate local:PageInicioSesion}"
+    Route="relacion11_sqlite"/>
+    </FlyoutItem>
+    <FlyoutItem Title="Inicio De Sesion">
+        <ShellContent 
+    Title=""
+    ContentTemplate="{DataTemplate local:MenuInicioJuegos}"
+    Route="relacion11_sqlite"/>
+    </FlyoutItem>
+
+
+</Shell>
