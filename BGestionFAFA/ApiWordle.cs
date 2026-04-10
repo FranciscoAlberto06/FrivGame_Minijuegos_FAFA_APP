@@ -9,7 +9,6 @@ namespace BGestionFAFA
 {
     public class ApiWordle
     {
-
         // Va a contener el listado de palabras que se va a usar
         private static List<string> listaPalabras;
 
