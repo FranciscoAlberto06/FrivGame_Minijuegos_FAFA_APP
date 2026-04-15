@@ -10,7 +10,6 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class AdivinarLaPalabra2 : ContentPage
 {
-    //Ponemos static para que se pueda acceder a esta variable desde cualquier parte de la clase sin necesidad de crear una instancia de la clase
     private string _palabraSecreta = ""; // La palabra secreta modificada (sin acentos y en mayusculas)
     private int _filaActual = 0;
     private int _colActual = 0;
@@ -204,8 +203,6 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 {
                     Stroke = Colors.Gray,
                     StrokeThickness = 2,
-                    // CAMBIO CLAVE: No ponemos WidthRequest ni HeightRequest fijos.
-                    // Ponemos un tamaño mínimo para que mantenga la forma en móviles.
                     MinimumHeightRequest = 55,
                     MinimumWidthRequest = 55,
                     Padding = 5,
@@ -272,8 +269,8 @@ public partial class AdivinarLaPalabra2 : ContentPage
                     CornerRadius = 5,
                     Padding = 0, // Añadido para que el texto largo no se corte
                     FontSize = 14,
+                    
 
-        
                 };
 
 
@@ -317,12 +314,15 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     }
 
+
+   
+
     private async void EscribirLetra(string teclaPulsada)
     {
         // Comprobamos si no hemos superado el largo de la palabra secreta
         if (IntentoPalabraActual.Length < PalabraSecreta.Length)
         {
-            // 1. Localizamos la celda visual usando nuestros índices
+            // 1. Localizamos la celda visual usando nuestros indices
             Border borderActual = Celdas[FilaActual, ColActual];  // La primera vez seria la 0, 0
 
             // 2. Sacamo el Label que está dentro del Border para poder cambiar su texto
@@ -338,7 +338,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
             IntentoPalabraActual = IntentoPalabraActual + teclaPulsada;
             ColActual = ColActual + 1; // Cada vez que escribimos una leta le sumamo uno a las propieda de columna actual para la proxima letra que se escriba
 
-            // 5. Animación simple simulando un rebote al escribir la leta
+            // 5. Animacion simple simulando un rebote al escribir la leta
             // Lo ponemos await para que no se ejecute la 2 animacions a la vez y se ejecute en orden para que no se solapen
             await borderActual.ScaleTo(1.1, 50); // Crece un 10%
             await borderActual.ScaleTo(1.0, 50); // Vuelve a su tamaño
@@ -364,7 +364,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
             // Actualizar la IntentoPalabraActual quitando su ultima letra puesta
             IntentoPalabraActual = IntentoPalabraActual.Remove(IntentoPalabraActual.Length - 1);
-            // El Remove quita una parte del string, le pasamos la posición desde donde queremos quitar, en este caso quitamos 1 caracter desde la ultima posición
+            // El Remove quita una parte del string, le pasamos la posicion desde donde queremos quitar, en este caso quitamos 1 caracter desde la ultima posición
 
         }
 
@@ -484,7 +484,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
         
         string signficado = await ApiWordle.ObtenerSignificado(PalabraSecreta);
 
-        DisplayAlert("Wikipedia", signficado, "Cerrar");
+        DisplayAlert("RAE", signficado, "Cerrar");
 
     }
 }

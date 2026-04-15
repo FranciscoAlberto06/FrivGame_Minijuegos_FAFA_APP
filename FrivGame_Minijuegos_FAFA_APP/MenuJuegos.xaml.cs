@@ -144,6 +144,9 @@ public partial class MenuJuegos : ContentPage
             case "PAREJAS":
                 Navigation.PushAsync(new SeleccionTemaParejas());
                 break;
+            case "2048":
+                Navigation.PushAsync(new _2048game());
+                break;
         }
 
     }

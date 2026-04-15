@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP.MenuInicioJuegos"
              xmlns:modelos="clr-namespace:BModelosFAFA;assembly=BModelosFAFA"
-             Title="MenuInicioJuegos">
+             Title="MenuInicioJuegos"
+             Shell.NavBarIsVisible="False">
     <CollectionView x:Name="ColeccionJuegos" >
         <CollectionView.ItemsLayout>
             <GridItemsLayout Orientation="Vertical" 

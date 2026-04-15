@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -9,7 +10,7 @@ namespace BGestionFAFA
 {
     public class ApiWordle
     {
-        // Va a contener el listado de palabras que se va a usar
+
         private static List<string> listaPalabras;
 
         // Generador de numeros aleatorios
@@ -21,21 +22,20 @@ namespace BGestionFAFA
             // Lo pasamos a mayusculas y le quitamos los espacios al principio y al final
             string textoLimpio = texto.ToUpper().Trim();
 
-            // Reemplazamos cada vocal acentuada por su equivalente sin acento, y también las vocales con diéresis
-            return textoLimpio
-                .Replace('Á', 'A')
-                .Replace('É', 'E')
-                .Replace('Í', 'I')
-                .Replace('Ó', 'O')
-                .Replace('Ú', 'U')
-                .Replace('Ä', 'A')
-                .Replace('Ë', 'E')
-                .Replace('Ï', 'I')
-                .Replace('Ö', 'O')
-                .Replace('Ü', 'U');
+            // Reemplazamos cada vocal acentuada por su equivalente sin acento, y tambien las vocales con dieresis
+            return textoLimpio.Replace('Á', 'A')
+                              .Replace('É', 'E')
+                              .Replace('Í', 'I')
+                              .Replace('Ó', 'O')
+                              .Replace('Ú', 'U')
+                              .Replace('Ä', 'A')
+                              .Replace('Ë', 'E')
+                              .Replace('Ï', 'I')
+                              .Replace('Ö', 'O')
+                              .Replace('Ü', 'U');
         }
 
-        // 2. Descargamos y preparamos nuestra única lista (Síncrono)
+        // 2. Descargamos y preparamos nuestra unica lista 
         public static void InicializarDiccionario()
         {
 
@@ -82,6 +82,8 @@ namespace BGestionFAFA
             {
                 Console.WriteLine("Error al descargar el diccionario: " + ex.Message);
             }
+
+
         }
 
         // Metodo para extraer una palabra aleatoria
@@ -124,21 +126,23 @@ namespace BGestionFAFA
         public static async Task<string> ObtenerSignificado(string palabra)
         {
             // Valor por defecto en caso de que no se pueda obtener el significado
-            string resultado = "No disponible el significado de la palabra " + palabra;
+            string resultado = "No disponible el significado de " + palabra;
 
             // Usamos HttpClient para hacer la petición a la API de Wikipedia
             using (HttpClient cliente = new HttpClient())
             {
-                // El User-Agent es necesario para que Wikipedia no bloquee la petición
+                // El User-Agent es necesario para que la RAE no bloquee la peticion
                 cliente.DefaultRequestHeaders.Add("User-Agent", "MauiWordleApp/1.0");
 
-                // URL de la API de Wikipedia para obtener el resumen de la pagina de la palabra
-                string url = "https://es.wikipedia.org/api/rest_v1/page/summary/" + palabra.ToLower();
+                // URL de la API de la RAE para obtener uno de los significados de la pagina de la palabra
+                string url = "https://rae-api.com/api/words/" + palabra.ToLower();
 
                 try
                 {
+
                     // Hacemos la petición GET a la API
                     HttpResponseMessage respuesta = await cliente.GetAsync(url);
+
 
                     // Si la respuesta es exitosa, procesamos el JSON recibido
                     if (respuesta.IsSuccessStatusCode)
@@ -149,24 +153,53 @@ namespace BGestionFAFA
                         // Usamos JsonDocument para parsear el JSON y extraer el campo "extract" que contiene el resumen de la palabra
                         using (JsonDocument documento = JsonDocument.Parse(jsonRecibido))
                         {
+                            // Navegamos por la estructura: data -> meanings[0] -> senses[0]
+                            JsonElement senseObtenidos = documento.RootElement
+                                        .GetProperty("data")
+                                        .GetProperty("meanings")[0]
+                                        .GetProperty("senses");
 
-                            // Extraemos directamente el campo "extract"
-                            if (documento.RootElement.TryGetProperty("extract", out JsonElement fragmento))
+
+                            if (senseObtenidos.GetArrayLength() >= 3)
                             {
-                                resultado = fragmento.GetString();
+                                resultado = $"Significados de {palabra.ToUpper()}:";
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    if (senseObtenidos[i].TryGetProperty("description", out JsonElement definicion))
+                                    {
+                                        string definicionTexto = definicion.GetString();
+                                        if (!string.IsNullOrEmpty(definicionTexto))
+                                        {
+                                            resultado += $"\n{i + 1}. {definicionTexto}";
+                                        }
+                                    }
+                                }
+                            }
+                            else if (senseObtenidos.GetArrayLength() > 0)
+                            {
+                                // Si hay al menos un significado, lo mostramos
+                                string descripcion = senseObtenidos[0].GetProperty("description").GetString();
+
+                                if (!string.IsNullOrEmpty(descripcion))
+                                {
+                                    resultado = $"{palabra.ToUpper()}: " + descripcion;
+                                }
                             }
                         }
+
                     }
+
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    resultado = "Error de conexión: " + ex.Message;
+                    resultado = "Error al conectar para obtener el significado.";
                 }
 
                 return resultado;
             }
-
-
         }
+
+
+
     }
 }
