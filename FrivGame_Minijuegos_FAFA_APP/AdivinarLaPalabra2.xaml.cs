@@ -10,11 +10,13 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class AdivinarLaPalabra2 : ContentPage
 {
+    #region MIEMBROS PRIVADOS
     private string _palabraSecreta = ""; // La palabra secreta modificada (sin acentos y en mayusculas)
     private int _filaActual = 0;
     private int _colActual = 0;
     private string _intentoActual = "";
     private Border[,] _celdas; // un array bidimensional para almacenar las celdas del tablero, cada celda es un Border que contiene un Label con la letra
+    #endregion
 
     #region PROPIEDADES
     public string PalabraSecreta
@@ -61,6 +63,28 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     }
 
+    #region COMPROBACIONES INCIALES
+    private void ComprobarInternet()
+    {
+        // 1. Comprobamos el estado de la red
+        NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
+
+        //CargarPalabraOffline();
+
+        if (accesoRed == NetworkAccess.Internet)
+        {
+            // Si hay internet, ejecutamos el método online
+            //CargarPalabraOnline();
+            PalabraSecreta = ApiWordleFAFA.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
+        }
+        else
+        {
+            // Si no hay internet, ejecutamos el método offline
+            //CargarPalabraOffline();
+            PalabraSecreta = ApiWordleFAFA.CargarPalabraOffline();
+        }
+    }
+    #endregion
 
     #region CONFIGURACION TECLADO FISICO WINDOWS
 
@@ -109,6 +133,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
         if (key == "ENTER")
         {
+            //.Handled = true es para evitar que se ejecute cualquier otra acción por defecto que tenga
+            //esa tecla en Windows (como hacer un salto de linea o algo así)   
+            e.Handled = true;
             if (_intentoActual.Length == _palabraSecreta.Length)
             {
                 ValidarPalabra();
@@ -116,6 +143,8 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
         else if (key == "BACK" || e.Key == Windows.System.VirtualKey.Back)
         {
+            e.Handled = true;
+
             BorrarUltimaLetra();
         }
         else if (key.Length == 1 && char.IsLetter(key[0]))
@@ -126,47 +155,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     }
 #endif
-    #endregion
-    private void RecargarJuego(object sender, EventArgs e)
-    {
-        ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
-        CrearTablero(); // Creamos el tablero adaptandose a la palabra objetivo
-        // El teclado no hace falta volver a crearlo porque no cambia
-        bSignificado.IsVisible = false; // Volvemos a ocultar el boton de significado para que no se vea en medio del juego
-        ButtonReiniciar.IsVisible = false; // Volvemos a ocultar el boton de reiniciar para que no se vea en medio del juego
-        LabelMensaje.Text = "";
-        FilaActual = 0; // Reseteamos la fila actual para volver a empezar desde la primera fila
-        ColActual = 0; // Reseteamos la columna actual para volver a empezar desde la primera columna
-        IntentoPalabraActual = ""; // Reseteamos el intento actual para que no se quede guardada la palabra que se estaba escribiendo
-        KeyboardLayout.IsEnabled = true; // Volvemos a habilitar el teclado para que se pueda escribir la nueva palabra al haber reiniciado el juego
-    }
+    #endregion 
 
-    private void ComprobarInternet()
-    {
-        // 1. Comprobamos el estado de la red
-        NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
-
-        //CargarPalabraOffline();
-
-        if (accesoRed == NetworkAccess.Internet)
-        {
-            // Si hay internet, ejecutamos el método online
-            //CargarPalabraOnline();
-            PalabraSecreta = ApiWordleFAFA.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
-        }
-        else
-        {
-            // Si no hay internet, ejecutamos el método offline
-            //CargarPalabraOffline();
-            PalabraSecreta = ApiWordleFAFA.CargarPalabraOffline();
-        }
-    }
-
-
-
-
-
-
+    #region CREACIONES DE ELEMENTOS VISUALES
 
     public void CrearTablero()
     {
@@ -218,7 +209,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private void CrearTeclado()
     {
 
-     
+
 
         // 1. Definimos las filas con las teclas a usar
         string[][] filasTeclado = new string[][]
@@ -247,7 +238,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
             // 3. Recorremos todas las teclas de dicha fila de array 
             for (int i = 0; i < teclasSeparadas.Length; i++)
             {
-             
+
                 // Alargamos tanta veces columnas como letras haya en esa fila
                 fila.ColumnDefinitions.Add(new ColumnDefinition
                 {
@@ -269,7 +260,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                     CornerRadius = 5,
                     Padding = 0, // Añadido para que el texto largo no se corte
                     FontSize = 14,
-                    
+
 
                 };
 
@@ -285,7 +276,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
 
     }
+    #endregion
 
+    #region GESTION DE ACCIONES DE TECLADO
     public void PresionarTecla(Button boton)
     {
         string teclaPulsada = boton.Text;
@@ -295,7 +288,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
         {
             case "ENTER":
                 // Comprobamos que haya puesto una palabra 
-                if (IntentoPalabraActual.Length == PalabraSecreta.Length )
+                if (IntentoPalabraActual.Length == PalabraSecreta.Length)
                 {
                     ValidarPalabra();
                 }
@@ -315,12 +308,12 @@ public partial class AdivinarLaPalabra2 : ContentPage
     }
 
 
-   
+
 
     private async void EscribirLetra(string teclaPulsada)
     {
         // Comprobamos si no hemos superado el largo de la palabra secreta
-        if (IntentoPalabraActual.Length < PalabraSecreta.Length)
+        if (IntentoPalabraActual.Length < PalabraSecreta.Length && ColActual < PalabraSecreta.Length)
         {
             // 1. Localizamos la celda visual usando nuestros indices
             Border borderActual = Celdas[FilaActual, ColActual];  // La primera vez seria la 0, 0
@@ -336,14 +329,14 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
             // 4. A la palabra actual le añadimos la letra que se ha pulsado para ir formando la palabra que se va a ir escribiendo
             IntentoPalabraActual = IntentoPalabraActual + teclaPulsada;
-            ColActual = ColActual + 1; // Cada vez que escribimos una leta le sumamo uno a las propieda de columna actual para la proxima letra que se escriba
+            ColActual++; // Cada vez que escribimos una leta le sumamo uno a las propieda de columna actual para la proxima letra que se escriba
 
             // 5. Animacion simple simulando un rebote al escribir la leta
             // Lo ponemos await para que no se ejecute la 2 animacions a la vez y se ejecute en orden para que no se solapen
             await borderActual.ScaleTo(1.1, 50); // Crece un 10%
             await borderActual.ScaleTo(1.0, 50); // Vuelve a su tamaño
 
-       
+
         }
     }
 
@@ -369,7 +362,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
 
     }
+    #endregion
 
+    #region GESTION DE PALABRAS
     private async void ValidarPalabra()
     {
         try
@@ -463,28 +458,47 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 else
                 {
                     LabelMensaje.TextColor = Colors.Gray;
-                    LabelMensaje.Text="¡INTENTA DE NUEVO! TE QUEDAN " + (6 - FilaActual) + " INTENTOS";
+                    LabelMensaje.Text = "¡INTENTA DE NUEVO! TE QUEDAN " + (6 - FilaActual) + " INTENTOS";
                 }
-           
+
             }
         }
-        catch (Exception error) { 
-        
+        catch (Exception error) {
+
             LabelMensaje.Text = error.Message;
 
 
         }
-        finally {             
+        finally {
             KeyboardLayout.IsEnabled = true;
         }
     }
 
     private async void ConsultarPalabra(object sender, EventArgs e)
     {
-        
+
         string signficado = await ApiWordleFAFA.ObtenerSignificado(PalabraSecreta);
 
         DisplayAlert("RAE", signficado, "Cerrar");
 
     }
+
+    #endregion
+
+    private void RecargarJuego(object sender, EventArgs e)
+    {
+        ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
+        CrearTablero(); // Creamos el tablero adaptandose a la palabra objetivo
+        // El teclado no hace falta volver a crearlo porque no cambia
+        bSignificado.IsVisible = false; // Volvemos a ocultar el boton de significado para que no se vea en medio del juego
+        ButtonReiniciar.IsVisible = false; // Volvemos a ocultar el boton de reiniciar para que no se vea en medio del juego
+        LabelMensaje.Text = "";
+        FilaActual = 0; // Reseteamos la fila actual para volver a empezar desde la primera fila
+        ColActual = 0; // Reseteamos la columna actual para volver a empezar desde la primera columna
+        IntentoPalabraActual = ""; // Reseteamos el intento actual para que no se quede guardada la palabra que se estaba escribiendo
+        KeyboardLayout.IsEnabled = true; // Volvemos a habilitar el teclado para que se pueda escribir la nueva palabra al haber reiniciado el juego
+    }
+
+
+
 }
