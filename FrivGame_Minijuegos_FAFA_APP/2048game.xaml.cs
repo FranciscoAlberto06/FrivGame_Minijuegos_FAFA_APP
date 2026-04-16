@@ -19,6 +19,7 @@ public partial class _2048game : ContentPage
         IniciarJuego();
     }
 
+    #region CONFIGURACION TECLADO FISICO WINDOWS
     protected override void OnHandlerChanged()
     {
         base.OnHandlerChanged();
@@ -32,10 +33,12 @@ public partial class _2048game : ContentPage
     {
         if (this.Window?.Handler?.PlatformView is Microsoft.UI.Xaml.Window nativeWindow)
         {
+            // Nos aseguramos de eliminar cualquier suscripción previa para evitar múltiples manejadores
             nativeWindow.Content.KeyDown -= AlPulsarTeclaFisica;
             nativeWindow.Content.KeyDown += AlPulsarTeclaFisica;
         }
     }
+
 
     private void AlPulsarTeclaFisica(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
     {
@@ -45,31 +48,30 @@ public partial class _2048game : ContentPage
 
         switch (e.Key)
         {
-            case Windows.System.VirtualKey.Up:
-            case Windows.System.VirtualKey.W:
+            case Windows.System.VirtualKey.Up or Windows.System.VirtualKey.W:
+   
                 direccion = SwipeDirection.Up;
                 break;
-            case Windows.System.VirtualKey.Down:
-            case Windows.System.VirtualKey.S:
+            case Windows.System.VirtualKey.Down or Windows.System.VirtualKey.S:
                 direccion = SwipeDirection.Down;
                 break;
-            case Windows.System.VirtualKey.Left:
-            case Windows.System.VirtualKey.A:
+            case Windows.System.VirtualKey.Left or Windows.System.VirtualKey.A:
                 direccion = SwipeDirection.Left;
                 break;
-            case Windows.System.VirtualKey.Right:
-            case Windows.System.VirtualKey.D:
+            case Windows.System.VirtualKey.Right or Windows.System.VirtualKey.D:
                 direccion = SwipeDirection.Right;
                 break;
         }
 
+        // Si se ha pulsado una tecla de dirección, manejamos el evento de deslizamiento correspondiente
         if (direccion.HasValue)
         {
-            e.Handled = true; // Evita que la ventana haga scroll
+            e.Handled = true; // Evita que la ventana haga scroll al tocar las flechas
             onDeslizamiento(this, new SwipedEventArgs(null, direccion.Value));
         }
     }
 #endif
+    #endregion
 
     private void CrearTablero()
     {
@@ -109,6 +111,7 @@ public partial class _2048game : ContentPage
         }
     }
 
+    #region INICIALIZACION DEL JUEGO
     private void IniciarJuego()
     {
         // Reseteamos variables
@@ -128,7 +131,7 @@ public partial class _2048game : ContentPage
         AddFichasRandom();
     }
 
-    private void OnNewGameClicked(object sender, EventArgs e)
+    private void ResetJuego(object sender, EventArgs e)
     {
         IniciarJuego();
     }
@@ -136,8 +139,6 @@ public partial class _2048game : ContentPage
     // añadir una fiche aleatoria en una posición vacía del tablero, y ejecutar su animación de aparición
     private void AddFichasRandom()
     {
-
-    
      
             // Lista con lo hueco libre que hay en el tablero 
             int[,] listaHuecos = new int[16, 2]; // 16 porque el tablero tiene 16 casillas, y 2 porque guardaremos la fila y la columna 
@@ -191,7 +192,11 @@ public partial class _2048game : ContentPage
     
        
     }
-     
+    #endregion
+
+    #region METODOS DE ACTUALIZACION VISUAL
+
+    // Este metodo se encarga de actualizar toda la pantalla según el estado actual del tablero y la puntuación
     private void RefrescarPantalla()
     {
         for (int r = 0; r < 4; r++)
@@ -213,6 +218,7 @@ public partial class _2048game : ContentPage
         lPuntuacion.Text = $"Puntos: {puntuacion}";
     }
 
+    // Este metodo se encarga actualizar solo una celda concreta del tablero(las que se añaden por cada movimiento)
     private void ActualizarCeldaVisual(int f, int c)
     {
         // 1. Sacamos el valor que hay en la lógica
@@ -245,6 +251,7 @@ public partial class _2048game : ContentPage
 
     }
 
+    // Este metodo se encarga de resetear la interfaz al estado inicial, dejando el tablero vacío y la puntuación a 0
     private void ResetearInterfazInicio()
     {
         // Recorremos las 16 celdas del tablero
@@ -258,7 +265,7 @@ public partial class _2048game : ContentPage
                     // 2. Vaciamos el texto si el valor es 0
                     listaLabels[r, c].Text = "";
 
-                    // 3. El color de fondo para el 0 será el gris que definimos en el switch 
+                    // 3. El color de fondo para el 0 sera el gris que definimos en el switch 
                     listaBorders[r, c].BackgroundColor = GetColorCorrepondienteAValor(0);
 
                     // 4. Color de texto por defecto para fichas bajas
@@ -272,11 +279,12 @@ public partial class _2048game : ContentPage
         lPuntuacion.Text = "Puntos: 0";
     }
 
-    private Color GetColorCorrepondienteAValor(int value)
+    // Este metodo se encarga de asignar un color a la ficha segun el valor que tenga
+    private Color GetColorCorrepondienteAValor(int valor)
     {
         Color color = null;
 
-        switch (value)
+        switch (valor)
         {
             case 0:
                 color = Color.FromArgb("#23272A"); // Fondo vacío (Gris oscuro)
@@ -312,15 +320,19 @@ public partial class _2048game : ContentPage
                 color = Color.FromArgb("#EB459E"); // Rosa/Fucsia
                 break;
             case 2048:
-                color = Color.FromArgb("#FFD700"); // Dorado (¡Ganador!)
+                color = Color.FromArgb("#FFD700"); // Dorado 
                 break;
             default:
-                color = Color.FromArgb("#9B59B6"); // Púrpura (Valores superiores)
+                color = Color.FromArgb("#9B59B6"); // Púurpura (Si son mayores a 2048)
                 break;
         }
 
         return color;
     }
+
+
+    #endregion
+
 
 
     #region MÉTODOS DE DESLIZAMIENTO
@@ -353,7 +365,7 @@ public partial class _2048game : ContentPage
             RefrescarPantalla();
             if (ComprobarSiHaPerdido())
             {
-                await DisplayAlert("¡Has perdido!", "No hay más movimientos posibles", "Cerrar");
+                await DisplayAlert("¡Has perdido!", "No hay mas movimientos posibles", "Cerrar");
                 tableroGrid.IsEnabled = false; // Deshabilitamos el tablero para que no se puedan hacer más movimientos
             }
         }

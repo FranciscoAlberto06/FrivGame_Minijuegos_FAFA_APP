@@ -152,13 +152,13 @@ public partial class AdivinarLaPalabra2 : ContentPage
         {
             // Si hay internet, ejecutamos el método online
             //CargarPalabraOnline();
-            PalabraSecreta = ApiWordle.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
+            PalabraSecreta = ApiWordleFAFA.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
         }
         else
         {
             // Si no hay internet, ejecutamos el método offline
             //CargarPalabraOffline();
-            PalabraSecreta = ApiWordle.CargarPalabraOffline();
+            PalabraSecreta = ApiWordleFAFA.CargarPalabraOffline();
         }
     }
 
@@ -378,7 +378,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
             KeyboardLayout.IsEnabled = false;
 
             // Comprobamos si la palabra escrita existe en el diccionario, si no existe se lanzará una excepción que se capturará en el catch para mostrar un mensaje de error al usuario
-            if (!ApiWordle.ComprobarSiExiste(IntentoPalabraActual))
+            if (!ApiWordleFAFA.ComprobarSiExiste(IntentoPalabraActual))
             {
                 LabelMensaje.TextColor = Colors.Green;
                 throw new Exception("La palabra no existe en el diccionario, prueba con otra palabra");
@@ -482,7 +482,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private async void ConsultarPalabra(object sender, EventArgs e)
     {
         
-        string signficado = await ApiWordle.ObtenerSignificado(PalabraSecreta);
+        string signficado = await ApiWordleFAFA.ObtenerSignificado(PalabraSecreta);
 
         DisplayAlert("RAE", signficado, "Cerrar");
 

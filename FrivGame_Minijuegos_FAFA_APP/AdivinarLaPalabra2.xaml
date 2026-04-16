@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP.AdivinarLaPalabra2"
              Title="AdivinarLaPalabra2"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="White">
 
 
     <Grid RowDefinitions="*, Auto, Auto" Padding="10" RowSpacing="10" >

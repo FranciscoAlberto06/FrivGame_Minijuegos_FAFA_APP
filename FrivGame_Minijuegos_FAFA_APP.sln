@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGestionFAFA", "BGestionFAF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BModelosFAFA", "BModelosFAFA\BModelosFAFA.csproj", "{56768935-99D3-47CA-9752-63154EFFCD7A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BModelosSQLFAFA", "BModeloSQLFAFA\BModelosSQLFAFA.csproj", "{1E825F6F-7376-47E0-91C6-6739E47C153D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{56768935-99D3-47CA-9752-63154EFFCD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56768935-99D3-47CA-9752-63154EFFCD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56768935-99D3-47CA-9752-63154EFFCD7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E825F6F-7376-47E0-91C6-6739E47C153D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E825F6F-7376-47E0-91C6-6739E47C153D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E825F6F-7376-47E0-91C6-6739E47C153D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E825F6F-7376-47E0-91C6-6739E47C153D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP.MenuJuegos"
              Title="MenuJuegos"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             >
     <ScrollView>
         <FlexLayout x:Name="ContenedorJuegos" 
                     Wrap="Wrap" 

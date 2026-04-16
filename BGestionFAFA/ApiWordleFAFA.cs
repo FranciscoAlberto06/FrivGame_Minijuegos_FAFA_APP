@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BGestionFAFA
 {
-    public class ApiWordle
+    public class ApiWordleFAFA
     {
 
         private static List<string> listaPalabras;

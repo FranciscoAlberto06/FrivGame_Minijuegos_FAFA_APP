@@ -9,18 +9,11 @@
 
 
 
-    <FlyoutItem Title="Inicio De Sesion">
         <ShellContent 
     Title=""
     ContentTemplate="{DataTemplate local:PageInicioSesion}"
     Route="relacion11_sqlite"/>
-    </FlyoutItem>
-    <FlyoutItem Title="Inicio De Sesion">
-        <ShellContent 
-    Title=""
-    ContentTemplate="{DataTemplate local:MenuInicioJuegos}"
-    Route="relacion11_sqlite"/>
-    </FlyoutItem>
+
 
 
 </Shell>

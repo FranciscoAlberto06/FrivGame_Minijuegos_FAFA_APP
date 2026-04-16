@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP.PageInicioSesion"
              Title="PageInicioSesion"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             >
     <Grid>
         <!-- Fondo degradado -->
         <Grid.Background>

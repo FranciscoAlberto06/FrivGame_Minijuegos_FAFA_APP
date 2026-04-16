@@ -3,6 +3,8 @@ using System.Diagnostics;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
+//Definimos los estados posibles
+public enum EstadoTopo { Abajo, Arriba, Golpeado, Dorado, GolpeadoDorado }
 public partial class JuegoTopos : ContentPage
 {
 
@@ -10,9 +12,13 @@ public partial class JuegoTopos : ContentPage
     Stopwatch cronometro = new Stopwatch();
     // Creamos el temporizador que va a hacer que aparezcan los topos
     IDispatcherTimer timer;
-    // Creamos el temporizador que va a hacer que aparezcan los topos
+    // Creamos el temporizador que va a contar los segundo que hay en el cronometro para mostrarlo en la interfaz
     IDispatcherTimer timerCro;
+    // Creamos el temporizador que va a contar cuando salga los topos dorados para mostrarlo en la interfaz
+    IDispatcherTimer timerToposDorado;
 
+    // Variable global para almacenar el estado de los topos, si estan arriba, abajo o golpeados
+    Image[,] ArrayTopos = new Image[3, 3];
 
 
     public JuegoTopos()
@@ -34,9 +40,27 @@ public partial class JuegoTopos : ContentPage
             // Esta línea hace que el tiempo "suba" visualmente
             // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
             lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
+            if (cronometro.Elapsed.TotalSeconds >= 30)
+            {
+                FinalizarJuego();
+            }
 
-   
         };
+    }
+
+    private void FinalizarJuego()
+    {
+        // 1. Detenemos todos los timers y el cronómetro
+        cronometro.Stop();
+        timer.Stop();
+        timerCro.Stop();
+
+        // 2. Ocultamos el tablero para que no sigan clickeando
+        TableroJuego.IsVisible = false;
+        bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
+
+        // 3. Mostramos una alerta con el puntaje final
+        DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
     }
 
     private void CrearTablero()
@@ -45,9 +69,7 @@ public partial class JuegoTopos : ContentPage
         // No dejamos visible el tablero hasta que no le demos a empezar, asi no puede darle a los topos antes de tiempo
         TableroJuego.IsVisible = false;
 
-        // 1.- Preapramos nuestras imagenes en un plano de 3x3
-        ImageButton[,] ArrayTopos = new ImageButton[3, 3];
-        // 1.1- Generamos random para dar quien es el topo
+        // 1- Generamos random para dar quien es el topo
         Random random = new Random();
 
         
@@ -55,8 +77,8 @@ public partial class JuegoTopos : ContentPage
         // 2.- Definimos el Grid con 3 filas y 3 columnas
         for (int i = 0; i < 3; i++)
         {
-            TableroJuego.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            TableroJuego.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            TableroJuego.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+            TableroJuego.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
         }
 
         // 3.- Creación de los elementos del tablero
@@ -65,22 +87,34 @@ public partial class JuegoTopos : ContentPage
             for (int columna = 0; columna < 3; columna++)
             {
                 // 3.2.- Creamos el boton de imagen
-                ImageButton boton = new ImageButton
+                Image imagenBoton = new Image
                 {
                     Source = "hueco_vacio.png",
-                    HeightRequest = 150,
-                    WidthRequest = 150,
+                    Aspect = Aspect.AspectFit,
+                    StyleId = EstadoTopo.Abajo.ToString(), // ESTADO INICIAL
                     //AutomationId = "vacio",
-                    BindingContext = "abajo",
-                    BackgroundColor = Colors.Transparent
+                    BackgroundColor = Colors.Transparent,
+                    HeightRequest = 120,
+                    WidthRequest = 120,
+
                 };
 
-                // 3.3.- Asignación del evento para detectar el golpe
-                boton.Clicked += AlGolpearTopo;
+                // 2. Creamos la función de tocar 
+                TapGestureRecognizer tapEvento = new TapGestureRecognizer();
 
-                // Almacenamiento en el arreglo y adición al Grid
-                ArrayTopos[fila, columna] = boton;
-                TableroJuego.Add(boton, columna, fila);
+                // 3. Definimos qué hace la función al tocar
+                tapEvento.Tapped += (s, e) =>
+                {
+                    // Esta es la función de tocar
+                    AlGolpearTopo(s, e);
+                };
+
+                // 4. Añadimos la función a la imagen
+                imagenBoton.GestureRecognizers.Add(tapEvento);
+
+                // 5. Lo añadimos al Grid 
+                ArrayTopos[fila, columna] = imagenBoton;
+                TableroJuego.Add(imagenBoton, columna, fila);
             }
         }
 
@@ -107,13 +141,13 @@ public partial class JuegoTopos : ContentPage
 
         {
             // Primero limpiamos el tablero (bajamos a todos los que subieron antes)
-            foreach (ImageButton topo in ArrayTopos)
+            foreach (Image topo in ArrayTopos)
             {
                 // Solo entramos si el topo esta arriba o ha sido clickado/golpeado, si esta abajo no hacemos nada
-                if (topo.BindingContext.ToString() == "arriba" || topo.BindingContext.ToString() == "golpeado")
+                if (topo.StyleId != EstadoTopo.Abajo.ToString())
                 {
                     topo.Source = "hueco_vacio.png";
-                    topo.BindingContext = "abajo";
+                    topo.StyleId = EstadoTopo.Abajo.ToString();
                 }
             }
 
@@ -127,10 +161,20 @@ public partial class JuegoTopos : ContentPage
                 // Generamos una fila y una columna aleatoria
                 int filaAzar = random.Next(0, 3);
                 int colAzar = random.Next(0, 3);
+                Image topoActual = ArrayTopos[filaAzar, colAzar];
 
-                // Subimos el topo en esa posición aleatoria
-                ArrayTopos[filaAzar, colAzar].Source = "hueco_contopo.png";
-                ArrayTopos[filaAzar, colAzar].BindingContext = "arriba";
+                // Probabilidad del 15% para topo dorado
+                if (random.Next(1, 101) >= 15)
+                {
+                    topoActual.Source = "hueco_contopo.png";
+                    topoActual.StyleId = EstadoTopo.Arriba.ToString();
+     
+                }
+                else // Si esa probabilidad no se cumple, sale un topo dorado
+                {
+                    topoActual.Source = "hueco_contopo_dorado.png";
+                    topoActual.StyleId = EstadoTopo.Dorado.ToString();
+                }
             }
 
 
@@ -159,29 +203,30 @@ public partial class JuegoTopos : ContentPage
     private void AlGolpearTopo(object? sender, EventArgs e)
     {
         // Sacamos la imagen pulsada mediant el sender
-        ImageButton boton = (ImageButton)sender;
+        Image boton = (Image)sender;
 
 
         // Obtención del puntaje actual directamente desde el Label de la interfaz
         int puntosActuales = int.Parse(lbPuntaje.Text.Replace("Puntos: ", ""));
         int nuevoPuntaje;
 
-        // Verificación del estado de la imagen para sumar puntos
-        if (boton.BindingContext.ToString() == "arriba")
+        // Verificacion del estado de la imagen para sumar puntos
+        if (boton.StyleId == EstadoTopo.Arriba.ToString())
         {
             boton.Source = "topo_golpeado.png";
-
-            // Le sumamos numeros a las puntuación
+            boton.StyleId = EstadoTopo.Golpeado.ToString();
             nuevoPuntaje = puntosActuales + 10;
-
-            boton.BindingContext = "golpeado";
-
-
+        }
+        else if (boton.StyleId == EstadoTopo.Dorado.ToString())
+        {
+            boton.Source = "hueco_topodorado_golpeado.png";
+            boton.StyleId = EstadoTopo.GolpeadoDorado.ToString();
+            nuevoPuntaje = puntosActuales + 20;
         }
         else
         {
             // Si fallamos nos resta puntos
-            nuevoPuntaje = puntosActuales - 10;
+            nuevoPuntaje = puntosActuales - 5;
         }
 
         // Actualización de la puntuacion inutil
@@ -207,6 +252,29 @@ public partial class JuegoTopos : ContentPage
             timerCro.Stop();
             bStartStop.Text = "Continuar";
             TableroJuego.IsVisible= false;
+        }
+    }
+
+    private void ReiniciarClick(object sender, EventArgs e)
+    {
+        // 1. Detenemos todo por seguridad
+        cronometro.Stop();
+        cronometro.Reset();
+        timer.Stop();
+        timerCro.Stop();
+
+        // 2. Reseteamos la interfaz
+        lbPuntaje.Text = "Puntos: 0";
+        lbCronometro.Text = "00:00.000";
+        bStartStop.Text = "Iniciar";
+        bStartStop.IsVisible = true;
+        TableroJuego.IsVisible = false;
+
+        // 3. Limpiamos visualmente los topos (volver a huecos vacíos)
+        foreach (Image topo in ArrayTopos)
+        {
+            topo.Source = "hueco_vacio.png";
+            topo.StyleId = EstadoTopo.Abajo.ToString();
         }
     }
 }

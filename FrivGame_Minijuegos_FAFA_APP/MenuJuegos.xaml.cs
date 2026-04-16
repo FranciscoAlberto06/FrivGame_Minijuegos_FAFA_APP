@@ -14,8 +14,8 @@ public partial class MenuJuegos : ContentPage
     {
         // 1.- Creamos arrays con los datos de cada juego para poder recorrerlos y crear los contenedores de cada juego
         string[] titulos = { "TOPOS", "WORDLE", "PAREJAS","2048" };
-        string[] imagenes = { "portada_topos.png", "portada_adivinalapalabra.png", "portada_buscarparejas.png", "portada_buscarparejas.png" };
-        Color[] colores = { Colors.Crimson, Colors.MediumSpringGreen, Colors.DeepSkyBlue, Colors.LightYellow };
+        string[] imagenes = { "portada_topos.png", "portada_adivinalapalabra.png", "portada_buscarparejas.png", "portada_2048.png" };
+        Color[] colores = { Colors.Crimson, Colors.MediumSpringGreen, Colors.DeepSkyBlue, Colors.Yellow };
 
 
        
@@ -106,7 +106,7 @@ public partial class MenuJuegos : ContentPage
                 //Una vez configurado los efectos que queremos, añadimos la configuracion a cada border del juego que queramos para que se apliquen
                 contenedorBorder.GestureRecognizers.Add(mouseGesture);
             }
-            // CONFIGURACION PARA MOVIL (Android/iOS)
+            // CONFIGURACION PARA MOVIL 
             else if (DeviceInfo.Current.Platform == DevicePlatform.Android || DeviceInfo.Current.Platform == DevicePlatform.iOS)
             {
                 // Esta varibale sirve para crear los ajustes segun la necesidades que tengamos del touch

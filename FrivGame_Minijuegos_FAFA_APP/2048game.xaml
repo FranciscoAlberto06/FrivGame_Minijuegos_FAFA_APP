@@ -3,7 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP._2048game"
              Title="_2048game"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="Black">
+    
+    
 <VerticalStackLayout Spacing="15" Padding="20" HorizontalOptions="Center" VerticalOptions="Center">
 
         <Label Text="2048" 
@@ -45,7 +48,7 @@
         </Border>
 
         <Button Text="NUEVO JUEGO" 
-                Clicked="OnNewGameClicked" 
+                Clicked="ResetJuego" 
                 BackgroundColor="#7289DA" 
                 TextColor="White" 
                 CornerRadius="20" 
