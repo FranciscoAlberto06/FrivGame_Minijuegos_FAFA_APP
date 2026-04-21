@@ -7,62 +7,29 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 public enum EstadoTopo { Abajo, Arriba, Golpeado, Dorado, GolpeadoDorado }
 public partial class JuegoTopos : ContentPage
 {
-
+    #region VARIABLES GLOBALES
     // El Stopwatch va a generar un cronometro para medir el registro
     Stopwatch cronometro = new Stopwatch();
     // Creamos el temporizador que va a hacer que aparezcan los topos
     IDispatcherTimer timer;
     // Creamos el temporizador que va a contar los segundo que hay en el cronometro para mostrarlo en la interfaz
     IDispatcherTimer timerCro;
-    // Creamos el temporizador que va a contar cuando salga los topos dorados para mostrarlo en la interfaz
-    IDispatcherTimer timerToposDorado;
 
     // Variable global para almacenar el estado de los topos, si estan arriba, abajo o golpeados
     Image[,] ArrayTopos = new Image[3, 3];
-
+    #endregion
 
     public JuegoTopos()
     {
         InitializeComponent();
 
-        // Metodo que realiza las creacion del tablero de juego
+        // Metodo que realiza las creacion del tablero de juegoas
         CrearTablero();
         // Metodo que realiza la suma de tiempo al cronometro
         ConfigurarCronometro();
     }
 
-    private void ConfigurarCronometro()
-    {
-        timerCro = Dispatcher.CreateTimer();
-        timerCro.Interval = TimeSpan.FromMilliseconds(100); // Actualiza 10 veces por segundo
-        timerCro.Tick += (s, e) =>
-        {
-            // Esta línea hace que el tiempo "suba" visualmente
-            // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
-            lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
-            if (cronometro.Elapsed.TotalSeconds >= 30)
-            {
-                FinalizarJuego();
-            }
-
-        };
-    }
-
-    private void FinalizarJuego()
-    {
-        // 1. Detenemos todos los timers y el cronómetro
-        cronometro.Stop();
-        timer.Stop();
-        timerCro.Stop();
-
-        // 2. Ocultamos el tablero para que no sigan clickeando
-        TableroJuego.IsVisible = false;
-        bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
-
-        // 3. Mostramos una alerta con el puntaje final
-        DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
-    }
-
+    #region CREACION DEL TABLERO DE JUEGO
     private void CrearTablero()
     {
 
@@ -72,7 +39,7 @@ public partial class JuegoTopos : ContentPage
         // 1- Generamos random para dar quien es el topo
         Random random = new Random();
 
-        
+
 
         // 2.- Definimos el Grid con 3 filas y 3 columnas
         for (int i = 0; i < 3; i++)
@@ -99,18 +66,38 @@ public partial class JuegoTopos : ContentPage
 
                 };
 
-                // 2. Creamos la función de tocar 
-                TapGestureRecognizer tapEvento = new TapGestureRecognizer();
-
-                // 3. Definimos qué hace la función al tocar
-                tapEvento.Tapped += (s, e) =>
+                // 2. Creamos la función de tocar y de clickar
+                // 3. Definimos que hace la funcion al tocar y clickar
+                if (DeviceInfo.Platform.ToString() == "Android")
                 {
-                    // Esta es la función de tocar
-                    AlGolpearTopo(s, e);
-                };
+                    TapGestureRecognizer tapEvento = new TapGestureRecognizer();
 
-                // 4. Añadimos la función a la imagen
-                imagenBoton.GestureRecognizers.Add(tapEvento);
+                    tapEvento.Tapped += (s, e) =>
+                    {
+                        // Esta es la función de tocar
+                        AlGolpearTopo(s, e);
+                    };
+
+                    // 4. Añadimos la función a la imagen
+                    imagenBoton.GestureRecognizers.Add(tapEvento);
+
+                }
+                else if(DeviceInfo.Platform.ToString() == "WinUI")
+                {
+                    PointerGestureRecognizer ratonEvento = new PointerGestureRecognizer();
+
+                    ratonEvento.PointerPressed += (s, e) =>
+                    {
+                        AlGolpearTopo(s, e);
+                    };
+
+                    // 4. Añadimos la función a la imagen
+                    imagenBoton.GestureRecognizers.Add(ratonEvento);
+
+                }
+
+
+
 
                 // 5. Lo añadimos al Grid 
                 ArrayTopos[fila, columna] = imagenBoton;
@@ -168,7 +155,7 @@ public partial class JuegoTopos : ContentPage
                 {
                     topoActual.Source = "hueco_contopo.png";
                     topoActual.StyleId = EstadoTopo.Arriba.ToString();
-     
+
                 }
                 else // Si esa probabilidad no se cumple, sale un topo dorado
                 {
@@ -184,7 +171,46 @@ public partial class JuegoTopos : ContentPage
 
 
     }
+    #endregion
 
+    #region CONFIGURACION CRONOMETRO
+    private void ConfigurarCronometro()
+    {
+        timerCro = Dispatcher.CreateTimer();
+        timerCro.Interval = TimeSpan.FromMilliseconds(100); // Actualiza 10 veces por segundo
+        timerCro.Tick += (s, e) =>
+        {
+            // Esta línea hace que el tiempo "suba" visualmente
+            // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
+            lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
+            if (cronometro.Elapsed.TotalSeconds >= 30)
+            {
+                FinalizarJuego();
+            }
+
+        };
+    }
+
+    
+
+
+    private void FinalizarJuego()
+    {
+        // 1. Detenemos todos los timers y el cronómetro
+        cronometro.Stop();
+        timer.Stop();
+        timerCro.Stop();
+
+        // 2. Ocultamos el tablero para que no sigan clickeando
+        TableroJuego.IsVisible = false;
+        bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
+
+        // 3. Mostramos una alerta con el puntaje final
+        DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
+    }
+    #endregion
+
+    #region FUNCIONES DE LOS TOPOS
     private void Timer_Tick(object? sender, EventArgs e)
     {
         throw new NotImplementedException();
@@ -233,7 +259,9 @@ public partial class JuegoTopos : ContentPage
         lbPuntaje.Text = "Puntos: " + nuevoPuntaje.ToString();
 
     }
+    #endregion
 
+    #region CONTROLADOR DEL CURSO DEL JUEGO  (INICIAR, PAUSAR, REINICIAR)
     private void StartStopClick(object sender, EventArgs e)
     {
         // Si el Cronometro no esta activo se activa el cronometro y el timer que genera lo topos
@@ -277,4 +305,8 @@ public partial class JuegoTopos : ContentPage
             topo.StyleId = EstadoTopo.Abajo.ToString();
         }
     }
+    #endregion
+
+
+
 }

@@ -60,6 +60,7 @@
 
                     <!-- Email -->
                     <Entry 
+                        x:Name="eEmail"
                         Placeholder="Correo electrónico"
                         TextColor="White"
                         PlaceholderColor="#64748B"
@@ -70,6 +71,7 @@
 
                     <!-- Password -->
                     <Entry 
+                        x:Name="ePassword"
                         Placeholder="Contraseña"
                         IsPassword="True"
                         TextColor="White"
@@ -77,6 +79,14 @@
                         BackgroundColor="#0F172A"
                         HeightRequest="50"
                         />
+                    <Label 
+                        x:Name="lError"
+                        Text="Usuario o contraseña incorrectos"
+                        TextColor="Red" 
+                        FontSize="13"
+                        HorizontalOptions="Center"
+                        IsVisible="False"
+                        Margin="0,5,0,0"/>  
 
                     <!-- Boton -->
                     <Button 
@@ -86,7 +96,7 @@
                         BackgroundColor="#6366F1"
                         TextColor="White"
                         FontAttributes="Bold"
-                        Clicked="botonInico"
+                        Clicked="botonInicio"
                         />
 
                 </VerticalStackLayout>
@@ -100,11 +110,15 @@
                 <Label 
                     Text="¿No tienes cuenta?"
                     TextColor="#94A3B8"/>
-
                 <Label 
                     Text="Regístrate"
                     TextColor="#6366F1"
-                    FontAttributes="Bold"/>
+                    FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="IrPaginaRegistro" />
+                    </Label.GestureRecognizers>
+                </Label>
+
 
             </HorizontalStackLayout>
 

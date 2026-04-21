@@ -114,8 +114,8 @@ public partial class AdivinarLaPalabra2 : ContentPage
         {
             // Quitamos el evento antes de ponerlo para no escribir 2 veces por pulsación
             nativeWindow.Content.KeyDown -= AlPulsarTeclaFisica;
-            // El keydown es el evento que se ejecutar al pulsar una tecla fisica
-            nativeWindow.Content.KeyDown += AlPulsarTeclaFisica;
+             // El keydown es el evento que se ejecutar al pulsar una tecla fisica
+            nativeWindow.Content.KeyDown += AlPulsarTeclaFisica;           
         }
     }
 
@@ -123,22 +123,35 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
 
 
-    private void AlPulsarTeclaFisica(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+    private async void AlPulsarTeclaFisica(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
     {
-        // Si el teclado visual está apagado (fin de juego), no hacemos nada
+
         if (KeyboardLayout == null || !KeyboardLayout.IsEnabled) return;
 
         // Convertimos la tecla a texto (ej: "A", "Enter", "Back")
         string key = e.Key.ToString().ToUpper();
+            
+        // 1. BLOQUEO DEL TABULADOR
+        // 1. ANULACIÓN TOTAL: Si es Enter o Tab, le decimos a Windows que NO EXISTEN
+        if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab)
+        {
+            e.Handled = true; // Aquí es donde "vaciamos" la acción de Windows
+        }
 
-        if (key == "ENTER")
+
+
+        if (e.Key == Windows.System.VirtualKey.Enter) 
         {
             //.Handled = true es para evitar que se ejecute cualquier otra acción por defecto que tenga
             //esa tecla en Windows (como hacer un salto de linea o algo así)   
-            e.Handled = true;
-            if (_intentoActual.Length == _palabraSecreta.Length)
+  
+
+
+
+                // Solo si el teclado está habilitado y la palabra está completa
+            if (KeyboardLayout.IsEnabled && _intentoActual.Length == _palabraSecreta.Length)
             {
-                ValidarPalabra();
+                await ValidarPalabra();
             }
         }
         else if (key == "BACK" || e.Key == Windows.System.VirtualKey.Back)
@@ -150,7 +163,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
         else if (key.Length == 1 && char.IsLetter(key[0]))
         {
             // Solo enviamos letras de la A a la Z
-            EscribirLetra(key);
+            await EscribirLetra(key);
         }
 
     }
@@ -265,7 +278,15 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 };
 
 
-                botonNuevo.Clicked += (s, e) => PresionarTecla(botonNuevo);
+                botonNuevo.Clicked += (s, e) =>
+                {
+
+                    // Evita que si usamos el boton alguna vez en windows no se queda el foco en el boton y no nos deje escribir en el teclado
+                    #if WINDOWS
+                    botonNuevo.Unfocus();
+                    #endif
+                    PresionarTecla(botonNuevo);
+                };
 
                 // Añadimos el boton al Grid en la columna correspondiente
                 fila.Add(botonNuevo, i, 0);
@@ -276,10 +297,10 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
 
     }
-    #endregion
+#endregion
 
     #region GESTION DE ACCIONES DE TECLADO
-    public void PresionarTecla(Button boton)
+    public async void PresionarTecla(Button boton)
     {
         string teclaPulsada = boton.Text;
 
@@ -290,7 +311,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 // Comprobamos que haya puesto una palabra 
                 if (IntentoPalabraActual.Length == PalabraSecreta.Length)
                 {
-                    ValidarPalabra();
+                    await ValidarPalabra();
                 }
                 break;
 
@@ -301,7 +322,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
             default:
                 // Si no es Enter ni Borrar, asumimos que es una letra
-                EscribirLetra(teclaPulsada);
+                 await EscribirLetra(teclaPulsada);
                 break;
         }
 
@@ -310,34 +331,42 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
 
 
-    private async void EscribirLetra(string teclaPulsada)
+    private async Task EscribirLetra(string teclaPulsada)
     {
-        // Comprobamos si no hemos superado el largo de la palabra secreta
-        if (IntentoPalabraActual.Length < PalabraSecreta.Length && ColActual < PalabraSecreta.Length)
+        try
         {
-            // 1. Localizamos la celda visual usando nuestros indices
-            Border borderActual = Celdas[FilaActual, ColActual];  // La primera vez seria la 0, 0
+            // Comprobamos si no hemos superado el largo de la palabra secreta
+            if (IntentoPalabraActual.Length < PalabraSecreta.Length && ColActual < PalabraSecreta.Length)
+            {
+                // 1. Localizamos la celda visual usando nuestros indices
+                Border borderActual = Celdas[FilaActual, ColActual];  // La primera vez seria la 0, 0
 
-            // 2. Sacamo el Label que está dentro del Border para poder cambiar su texto
-            Label labelActual = (Label)borderActual.Content;
+                // 2. Sacamo el Label que está dentro del Border para poder cambiar su texto
+                Label labelActual = (Label)borderActual.Content;
 
-            // 3. Editamo el contenido del Label para mostrar la letra que se ha pulsado
-            labelActual.Text = teclaPulsada;
+                // 3. Editamo el contenido del Label para mostrar la letra que se ha pulsado
+                labelActual.Text = teclaPulsada;
 
-            // Cambiamos el color del borde para indicar que la celda ya tiene una letra
-            borderActual.Stroke = Colors.Black;
+                // Cambiamos el color del borde para indicar que la celda ya tiene una letra
+                borderActual.Stroke = Colors.Black;
 
-            // 4. A la palabra actual le añadimos la letra que se ha pulsado para ir formando la palabra que se va a ir escribiendo
-            IntentoPalabraActual = IntentoPalabraActual + teclaPulsada;
-            ColActual++; // Cada vez que escribimos una leta le sumamo uno a las propieda de columna actual para la proxima letra que se escriba
+                // 4. A la palabra actual le añadimos la letra que se ha pulsado para ir formando la palabra que se va a ir escribiendo
+                IntentoPalabraActual = IntentoPalabraActual + teclaPulsada;
+                ColActual++; // Cada vez que escribimos una leta le sumamo uno a las propieda de columna actual para la proxima letra que se escriba
 
-            // 5. Animacion simple simulando un rebote al escribir la leta
-            // Lo ponemos await para que no se ejecute la 2 animacions a la vez y se ejecute en orden para que no se solapen
-            await borderActual.ScaleTo(1.1, 50); // Crece un 10%
-            await borderActual.ScaleTo(1.0, 50); // Vuelve a su tamaño
-
+                // 5. Animacion simple simulando un rebote al escribir la leta
+                // Lo ponemos await para que no se ejecute la 2 animacions a la vez y se ejecute en orden para que no se solapen
+                await borderActual.ScaleTo(1.1, 50); // Crece un 10%
+                await borderActual.ScaleTo(1.0, 50); // Vuelve a su tamaño
+            }
+        }
+        catch (Exception error)
+        {
 
         }
+
+
+        
     }
 
     private void BorrarUltimaLetra()
@@ -365,7 +394,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     #endregion
 
     #region GESTION DE PALABRAS
-    private async void ValidarPalabra()
+    private async Task ValidarPalabra()
     {
         try
         {
@@ -470,6 +499,8 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
         }
         finally {
+
+
             KeyboardLayout.IsEnabled = true;
         }
     }

@@ -73,6 +73,8 @@ public partial class _2048game : ContentPage
 #endif
     #endregion
 
+    #region INICIALIZACION DEL JUEGO
+
     private void CrearTablero()
     {
         for (int f = 0; f < 4; f++)
@@ -110,8 +112,6 @@ public partial class _2048game : ContentPage
             }
         }
     }
-
-    #region INICIALIZACION DEL JUEGO
     private void IniciarJuego()
     {
         // Reseteamos variables
@@ -332,8 +332,6 @@ public partial class _2048game : ContentPage
 
 
     #endregion
-
-
 
     #region MÉTODOS DE DESLIZAMIENTO
     // Este método se ejecuta cada vez que el usuario hace un gesto de deslizamiento en la pantalla

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace BModelosSQLFAFA
 {
+    
+    public enum Estados : byte { PENDIENTE, ACEPTADA, RECHAZADO};
+
     [Table("Amistad")]
     public class AmistadSQL
     {
@@ -16,8 +19,8 @@ namespace BModelosSQLFAFA
         public int IdUsuarioSolicitante { get; set; } // El que da a "Añadir"
         public int IdUsuarioReceptor { get; set; }    // El que recibe la notificación
 
-        public string Estado { get; set; } // "PENDIENTE", "ACEPTADA", "RECHAZADA"
+        public Estados Estado { get; set; } // "PENDIENTE", "ACEPTADA", "RECHAZADA"  :)
         public DateTime FechaSolicitud { get; set; }
     }
 }
-}
+

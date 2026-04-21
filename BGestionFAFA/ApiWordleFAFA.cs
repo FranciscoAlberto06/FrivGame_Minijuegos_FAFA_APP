@@ -66,7 +66,6 @@ namespace BGestionFAFA
                 foreach (string palabra in lineas)
                 {
 
-
                     // Filtramos para que entren a la lista las de 4 a 6 letras
                     if (palabra.Length >= 4 && palabra.Length <= 6)
                     {

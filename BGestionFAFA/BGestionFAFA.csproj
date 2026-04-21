@@ -2,12 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+	  <UseMaui>true</UseMaui>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BModelosFAFA\BModelosFAFA.csproj" />
+    <ProjectReference Include="..\BModeloSQLFAFA\BModelosSQLFAFA.csproj" />
   </ItemGroup>
 
 </Project>

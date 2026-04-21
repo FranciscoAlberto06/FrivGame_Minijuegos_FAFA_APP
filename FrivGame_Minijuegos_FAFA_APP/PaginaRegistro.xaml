@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.PaginaRegistro"
+             Title="PaginaRegistro"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#1E293B" Offset="0.0" />
+                <GradientStop Color="#0F172A" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <ScrollView VerticalOptions="Center">
+            <VerticalStackLayout 
+                Spacing="20"
+                Padding="30"
+                WidthRequest="350">
+
+                <Label 
+                    Text="Crea tu Perfil"
+                    FontSize="32"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    HorizontalOptions="Center"/>
+
+                <Label 
+                    Text="Únete a la comunidad de AbelGame"
+                    FontSize="14"
+                    TextColor="#94A3B8"
+                    HorizontalOptions="Center"
+                    Margin="0,0,0,10"/>
+
+                <Border 
+                    StrokeThickness="0"
+                    BackgroundColor="#1E293B"
+                    Padding="25"
+                    StrokeShape="RoundRectangle 25">
+
+                    <VerticalStackLayout Spacing="15">
+
+                        <Entry 
+                            x:Name="eNombreUsuario"
+                            Placeholder="Nombre de usuario"
+                            TextColor="White"
+                            PlaceholderColor="#64748B"
+                            BackgroundColor="#0F172A"
+                            HeightRequest="50"/>
+
+                        <Entry 
+                            x:Name="eEmail"
+                            Placeholder="Correo electrónico"
+                            Keyboard="Email"
+                            TextColor="White"
+                            PlaceholderColor="#64748B"
+                            BackgroundColor="#0F172A"
+                            HeightRequest="50"/>
+
+                        <Entry 
+                            x:Name="ePassword"
+                            Placeholder="Contraseña"
+                            IsPassword="True"
+                            TextColor="White"
+                            PlaceholderColor="#64748B"
+                            BackgroundColor="#0F172A"
+                            HeightRequest="50"/>
+
+                        <Label 
+                             x:Name="lError"
+                             Text="Usuario o contraseña incorrectos"
+                             TextColor="Red" 
+                             FontSize="13"
+                             HorizontalOptions="Center"
+                             IsVisible="False"
+                             Margin="0,5,0,0"/>
+                        
+                        <Button 
+                            Text="Registrarse ahora"
+                            HeightRequest="50"
+                            CornerRadius="15"
+                            BackgroundColor="#10B981" 
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            Margin="0,10,0,0"
+                            Clicked="clickRegistrar"/>
+
+                    </VerticalStackLayout>
+                </Border>
+   
+                <HorizontalStackLayout 
+                    HorizontalOptions="Center"
+                    Spacing="5">
+                    <Label Text="¿Ya tienes cuenta?" TextColor="#94A3B8"/>
+                    <Label Text="Inicia sesión" TextColor="#6366F1" FontAttributes="Bold">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="VolverAlInicio"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

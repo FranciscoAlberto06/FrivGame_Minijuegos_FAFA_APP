@@ -4,7 +4,7 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class MenuJuegos : ContentPage
 {
-	public MenuJuegos()
+	public MenuJuegos(int usuarioIniciado)
 	{
 		InitializeComponent();
         CrearMenuJuegos();
