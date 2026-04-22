@@ -19,5 +19,9 @@ namespace BModelosSQLFAFA
         public DateTime FechaObtencion { get; set; }
 
         public bool Sincronizado { get; set; }
+
+
+        // El booleano para saber si ya se subio a la nube
+        public bool Sincronizada { get; set; }
     }
 }

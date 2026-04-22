@@ -1,4 +1,6 @@
 
+using BGestionFAFA;
+using BModelosFAFA;
 using System.Diagnostics;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
@@ -17,12 +19,20 @@ public partial class JuegoTopos : ContentPage
 
     // Variable global para almacenar el estado de los topos, si estan arriba, abajo o golpeados
     Image[,] ArrayTopos = new Image[3, 3];
+
+    int PerfilUidActual;
+
+    
+
     #endregion
 
-    public JuegoTopos()
+    
+    public JuegoTopos(int uIdPerfil)
     {
         InitializeComponent();
 
+        // Hacemos global el uid del perfil acutal
+        PerfilUidActual = uIdPerfil;
         // Metodo que realiza las creacion del tablero de juegoas
         CrearTablero();
         // Metodo que realiza la suma de tiempo al cronometro
@@ -173,6 +183,7 @@ public partial class JuegoTopos : ContentPage
     }
     #endregion
 
+
     #region CONFIGURACION CRONOMETRO
     private void ConfigurarCronometro()
     {
@@ -183,6 +194,7 @@ public partial class JuegoTopos : ContentPage
             // Esta línea hace que el tiempo "suba" visualmente
             // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
             lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
+            // Cuando llegemos a 30 s finalizamos
             if (cronometro.Elapsed.TotalSeconds >= 30)
             {
                 FinalizarJuego();
@@ -205,8 +217,13 @@ public partial class JuegoTopos : ContentPage
         TableroJuego.IsVisible = false;
         bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
 
-        // 3. Mostramos una alerta con el puntaje final
+        // 3. Guardamos partida
+        //ApiSQLiteFAFA.GuardarPartida(PerfilUidActual,);
+
+        // 4. Mostramos una alerta con el puntaje final
         DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
+
+
     }
     #endregion
 

@@ -16,5 +16,9 @@ namespace BModelosSQLFAFA
         public string Nombre { get; set; }
         public string CondicionDesbloqueo { get; set; }
         public int XpPremio { get; set; }
+
+
+        // El booleano para saber si ya se subio a la nube
+        public bool Sincronizada { get; set; }
     }
 }

@@ -5,12 +5,55 @@
              Title="MenuJuegos"
              Shell.NavBarIsVisible="False"
              >
-    <ScrollView>
-        <FlexLayout x:Name="ContenedorJuegos" 
-                    Wrap="Wrap" 
-                    JustifyContent="Center" 
-                    AlignItems="Center" 
-                    AlignContent="Center"
-                    Padding="20" />
-    </ScrollView>
+    <Grid RowDefinitions="Auto, *">
+
+        <Border Grid.Row="0" 
+                Margin="20,40,20,15" 
+                Padding="20" 
+                StrokeThickness="1"
+                Stroke="#333333">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="25"/>
+            </Border.StrokeShape>
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#1E1E1E" Offset="0.1" />
+                    <GradientStop Color="#2A2A2A" Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="15">
+                <Border Grid.RowSpan="2" WidthRequest="65" HeightRequest="65" 
+                        StrokeThickness="2" Stroke="Crimson">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="32"/>
+                    </Border.StrokeShape>
+                    <Image Source="{Binding RutaAvatar}" Aspect="AspectFill"/>
+                </Border>
+
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                    <Label Text="{Binding NombreUsuario}" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="JUGADOR ACTIVO" FontSize="12" TextColor="#888888" Margin="0,-2,0,0"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
+                    <Label Text="LVL" FontSize="10" TextColor="Crimson" HorizontalOptions="Center" FontAttributes="Bold"/>
+                    <Label Text="{Binding Nivel}" FontSize="26" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,15,0,0">
+                    <ProgressBar Progress="{Binding BarraProgreso}" ProgressColor="Crimson" ScaleY="1.5"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <FlexLayout x:Name="ContenedorJuegos" 
+                        Wrap="Wrap" 
+                        JustifyContent="Center" 
+                        AlignItems="Center" 
+                        Padding="10,0,10,20" />
+        </ScrollView>
+
+    </Grid>
 </ContentPage>

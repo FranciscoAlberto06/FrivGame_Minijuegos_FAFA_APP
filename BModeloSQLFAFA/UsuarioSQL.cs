@@ -15,5 +15,9 @@ namespace BModelosSQLFAFA
         public string NombreUsuario { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+
+
+        // El booleano para saber si ya se subio a la nube
+        public bool Sincronizada { get; set; }
     }
 }

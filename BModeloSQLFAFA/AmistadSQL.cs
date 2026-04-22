@@ -21,6 +21,10 @@ namespace BModelosSQLFAFA
 
         public Estados Estado { get; set; } // "PENDIENTE", "ACEPTADA", "RECHAZADA"  :)
         public DateTime FechaSolicitud { get; set; }
+
+
+        // El booleano para saber si ya se subio a la nube
+        public bool Sincronizada { get; set; }
     }
 }
 

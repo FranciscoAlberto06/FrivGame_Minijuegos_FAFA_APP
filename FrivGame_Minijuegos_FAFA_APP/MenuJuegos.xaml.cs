@@ -1,37 +1,71 @@
+using BGestionFAFA;
+using BModelosFAFA;
+using BModelosSQLFAFA;
 using Microsoft.Maui.Controls.Shapes;
+using System.Security.Cryptography;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class MenuJuegos : ContentPage
 {
-	public MenuJuegos(int usuarioIniciado)
+    public Perfil PerfilActual { get; set; }
+
+    // Variable que local que no va a decir en que plataforma nos encontramos
+    bool esWindows = DeviceInfo.Current.Platform == DevicePlatform.WinUI;
+
+
+    public MenuJuegos(int usuarioIniciado)
 	{
 		InitializeComponent();
+        // Hacemos accesible id del usuario inicado desde cualquier luegar del codigo
+        PerfilActual = new Perfil();
+        PerfilActual.IdUsuario = usuarioIniciado;
         CrearMenuJuegos();
+    }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        // TODO: Implementar ajuste de perfil de usuario
+        // Lo ponemos aqui para que siempre se actualice el estaod del perfil
+        CargarPerfil(PerfilActual.IdUsuario);
+    }
+
+    private void CargarPerfil(int idUsuIniciado)
+    {
+        // Sacamos el perfil 
+        PerfilActual = ApiSQLiteFAFA.ExtraerPerfilPorId(idUsuIniciado);
+
+        // metemos experiencia para probar nuestro progressbar
+        PerfilActual.XpTotal = 3127;
+
+        // Mandamos el unico perfil que va a haber siempre,a nuestro biding context
+        this.BindingContext = PerfilActual;
+
     }
 
     private void CrearMenuJuegos()
     {
-        // 1.- Creamos arrays con los datos de cada juego para poder recorrerlos y crear los contenedores de cada juego
-        string[] titulos = { "TOPOS", "WORDLE", "PAREJAS","2048" };
-        string[] imagenes = { "portada_topos.png", "portada_adivinalapalabra.png", "portada_buscarparejas.png", "portada_2048.png" };
-        Color[] colores = { Colors.Crimson, Colors.MediumSpringGreen, Colors.DeepSkyBlue, Colors.Yellow };
 
-
-       
-        for (int i = 0; i < titulos.Length; i++)
+        #region SACAR JUEGO EXISTENTES
+        #endregion
+        List<Juego> listaJuegos = ApiSQLiteFAFA.ExtraerTodosLosJuegos();
+        // 2.- Recorremos la lista de objetos Juego
+        foreach (Juego juego in listaJuegos)
         {
-            // 2.- Recorremos el array y por cada juego creamos un contenedor con su imagen y su nombre, y le aplicamos los efectos al entrar el puntero
+            // 2.1- Sacamos los datos directamente del modelo Juego
+            string nombreDelJuego = juego.Nombre;
+            string rutaImagen = juego.ImagenURL; // Usamos el nombre que tenemos nuestra clase Juego
 
-            // 2.1- Sacamos el nombre del juego
-            string nombreDelJuego = titulos[i];
+            // Sacamos el color de borde que va a tener
+            Color colorDelBorde = Color.FromArgb(juego.ColorHex);
 
-            // 2.2- Creaccion del borde, el grid, el label, la imagen y su configuración de estilos y efectos
+            // 2.2- Creación del borde
             Border contenedorBorder = new Border
             {
-                Stroke = colores[i], // Color del borde
-                StrokeThickness = 3, // Grosor del borde
-                StrokeShape = new RoundRectangle { CornerRadius = 15 }, // Forma del borde 
+                Stroke = colorDelBorde,
+                StrokeThickness = 3,
+                StrokeShape = new RoundRectangle { CornerRadius = 15 },
                 HeightRequest = 250,
                 WidthRequest = 250,
                 BackgroundColor = Colors.Black,
@@ -39,12 +73,11 @@ public partial class MenuJuegos : ContentPage
                 Margin = 10
             };
 
-            // Tambien un grid para colocar la imagen y el nombre del juego uno encima de otro dentro del borde
             Grid contenidoInternoGrid = new Grid();
 
             Image foto = new Image
             {
-                Source = imagenes[i],
+                Source = rutaImagen,
                 Aspect = Aspect.AspectFill,
                 Opacity = 0.9
             };
@@ -57,9 +90,8 @@ public partial class MenuJuegos : ContentPage
                 FontAttributes = FontAttributes.Bold,
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
-                Opacity = 0 // lo ponemos a 0 para que no se vea al principio
+                Opacity = 0
             };
-
 
             // 3.- Los unimos en la interfaz, metiendo el label y la imagen en el grid, y el grid en el borde
 
@@ -70,9 +102,9 @@ public partial class MenuJuegos : ContentPage
             // Y lo metemos el grid  en su border
             contenedorBorder.Content = contenidoInternoGrid;
 
-
+            #region CONFIGURACION DE EFECTO SEGUN LA PLATAFORMA
             //4.- Configuracion de efectos que queremos que tenga el border segun la plataforma
-            if (DeviceInfo.Current.Platform == DevicePlatform.WinUI || DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
+            if (esWindows)
             {
                 //Esta variable sirve para crear los ajustes segun la necesidades que tengamos del mouse
                 PointerGestureRecognizer mouseGesture = new PointerGestureRecognizer();
@@ -102,12 +134,12 @@ public partial class MenuJuegos : ContentPage
                     MoverAlJuego(nombreDelJuego);
                 };
 
-
                 //Una vez configurado los efectos que queremos, añadimos la configuracion a cada border del juego que queramos para que se apliquen
                 contenedorBorder.GestureRecognizers.Add(mouseGesture);
+
             }
             // CONFIGURACION PARA MOVIL 
-            else if (DeviceInfo.Current.Platform == DevicePlatform.Android || DeviceInfo.Current.Platform == DevicePlatform.iOS)
+            else 
             {
                 // Esta varibale sirve para crear los ajustes segun la necesidades que tengamos del touch
                 TapGestureRecognizer touchGesture = new TapGestureRecognizer();
@@ -124,6 +156,7 @@ public partial class MenuJuegos : ContentPage
 
                 contenedorBorder.GestureRecognizers.Add(touchGesture);
             }
+            #endregion
 
             // 5.- Y por ultimo, añadimos el border a la interfaz, colocandolo en la columna correspondiente segun el indice del juego
             ContenedorJuegos.Children.Add(contenedorBorder);
@@ -136,16 +169,16 @@ public partial class MenuJuegos : ContentPage
         switch (nombreDelJuego)
         {
             case "TOPOS":
-                Navigation.PushAsync(new JuegoTopos());
+                await Navigation.PushAsync(new JuegoTopos(PerfilActual.PerfilUid));
                 break;
             case "WORDLE":
-                Navigation.PushAsync(new AdivinarLaPalabra2());
+                await Navigation.PushAsync(new AdivinarLaPalabra2());
                 break;
             case "PAREJAS":
-                Navigation.PushAsync(new SeleccionTemaParejas());
+                await Navigation.PushAsync(new SeleccionTemaParejas());
                 break;
             case "2048":
-                Navigation.PushAsync(new _2048game());
+                await Navigation.PushAsync(new _2048game());
                 break;
         }
 

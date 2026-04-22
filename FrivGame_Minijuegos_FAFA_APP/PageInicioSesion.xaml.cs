@@ -6,7 +6,7 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class PageInicioSesion : ContentPage
 {
-	public PageInicioSesion()
+    public PageInicioSesion()
 	{
 		InitializeComponent();
 		AnimacionInicio();
@@ -85,7 +85,7 @@ public partial class PageInicioSesion : ContentPage
 
             // 2. Comprobar que la cuenta exista y la contraseña sea correcto
             // 2.1. Sacamos el id del usuario con ese correo para la sacar la contraseña oculta
-            idUsuario = ApiSQLiteFAFA.ExtraerIdUsuario(eEmail.Text);
+            idUsuario = ApiSQLiteFAFA.ExtraerIdUsuarioPorEmail(eEmail.Text);
 
             // 2.2 Comprobamos que haya devuelto un id 
             if (idUsuario == null)

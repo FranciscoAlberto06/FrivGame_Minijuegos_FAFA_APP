@@ -52,12 +52,11 @@ namespace BGestionFAFA
 
         }
 
-        private static void CrearTablasNecesaria(SQLiteConnection conexion)
+        private async static Task CrearTablasNecesaria(SQLiteConnection conexion)
         {
             // Esto hara que se crren la tablas necesarias si no estan creadas
             conexion.CreateTable<UsuarioSQL>();
-            // Esto asegura que el primer id que se reparta no empiece por 0
-            conexion.Execute("INSERT OR IGNORE INTO sqlite_sequence (name, seq) VALUES ('Usuario', 0)");
+
             conexion.CreateTable<UsuarioLogroSQL>();
             conexion.CreateTable<AmistadSQL>();
             conexion.CreateTable<JuegoSQL>();
@@ -65,6 +64,28 @@ namespace BGestionFAFA
             conexion.CreateTable<PerfilSQL>();
             conexion.CreateTable<LogroSQL>();
 
+            // 1. Conteo síncrono (usando el modelo de la tabla SQL)
+            int conteoJuegos = conexion.Table<JuegoSQL>().Count();
+
+            if (conteoJuegos == 0)
+            {
+                // 2. Definimos la lista con el modelo "Juego" (el que entiende tu método)
+                // USAMOS List<Juego> para que el foreach funcione
+                List<Juego> juegosIniciales = new List<Juego>
+                {
+                    new Juego { Nombre = "TOPOS", ImagenURL = "portada_topos.png", ColorHex = "#DC143C" },
+                    new Juego { Nombre = "WORDLE", ImagenURL = "portada_adivinalapalabra.png", ColorHex = "#00FA9A" },
+                    new Juego { Nombre = "PAREJAS", ImagenURL = "portada_buscarparejas.png", ColorHex = "#00BFFF" },
+                    new Juego { Nombre = "2048", ImagenURL = "portada_2048.png", ColorHex = "#FFFF00" }
+                };
+
+                // 3. Ahora sí, recorremos la lista de modelos "Juego"
+                foreach (Juego j in juegosIniciales)
+                {
+                    // 4. Se lo pasamos a tu método que ya se encarga de convertirlo a JuegoSQL e insertar
+                    InsertarJuego(j);
+                }
+            }
         }
 
         #endregion
@@ -79,7 +100,8 @@ namespace BGestionFAFA
                 {
                     // IdJuego no se pasa porque es AutoIncrement
                     Nombre = juegoNormal.Nombre,
-                    Reglas = juegoNormal.Reglas
+                    ImagenURL = juegoNormal.ImagenURL,
+                    ColorHex = juegoNormal.ColorHex,
                 };
                 conexion.Insert(juegoSQL);
             }
@@ -96,6 +118,7 @@ namespace BGestionFAFA
                 UsuarioSQL usuarioSQL = new UsuarioSQL
                 {
                     Email = usuario.Email,
+                    Sincronizada = false,
                 };
                 // Insertamos dicho usuario
                 conexion.Insert(usuarioSQL);
@@ -118,7 +141,8 @@ namespace BGestionFAFA
                     IdJuego = logro.IdJuego,
                     Nombre = logro.Nombre,
                     CondicionDesbloqueo = logro.CondicionDesbloqueo,
-                    XpPremio = logro.XpPremio
+                    XpPremio = logro.XpPremio,
+                    Sincronizada = false,
                 };
                 conexion.Insert(logroSQL);
             }
@@ -132,13 +156,15 @@ namespace BGestionFAFA
                 {
                    
                     IdUsuario = perfil.IdUsuario,
+                    NombreUsuario = perfil.NombreUsuario,
                     Nivel = perfil.Nivel,
                     XpTotal = perfil.XpTotal,
+                    Sincronizada = false,
                     AvatarUrl = perfil.AvatarUrl
                 };
 
                 //Generamos su UID unico y personal seugno su nombre de usuario
-                perfilSQL.PerfilUid = perfilSQL.GenerarUidPerfil(perfil.NombreUsario);
+                perfilSQL.PerfilUid = perfilSQL.GenerarUidPerfil(perfil.NombreUsuario);
                 conexion.Insert(perfilSQL);
             }
         }
@@ -151,7 +177,6 @@ namespace BGestionFAFA
                 {
                     // Si el Uuid viene vacío desde la app, lo generamos aquí
                     Uuid = string.IsNullOrEmpty(partida.Uuid) ? Guid.NewGuid().ToString() : partida.Uuid,
-                    IdUsuario = partida.IdUsuario,
                     IdJuego = partida.IdJuego,
                     Puntuacion = partida.Puntuacion,
                     TiempoSegundos = partida.TiempoSegundos,
@@ -173,6 +198,7 @@ namespace BGestionFAFA
                     IdUsuarioReceptor = usuReceptor.IdUsuario,
                     Estado = Estados.PENDIENTE, // Asegura que el enum coincida
                     FechaSolicitud = DateTime.Now,
+                    Sincronizada = false,
                 };
                 conexion.Insert(amistadSQL);
             }
@@ -245,8 +271,7 @@ namespace BGestionFAFA
             // 1. Comprobamos si existe dicho correo
             ComprobarSiExisteUsuario(email);
 
-            // 2. Sino salta excepcion comprobamos que la contreseña sea correcta
-            // 2.1. Sacamos contraseña original
+            
 
         }
 
@@ -288,7 +313,7 @@ namespace BGestionFAFA
 
         #region METODOS DE EXTRACCION
 
-        public static int ExtraerIdUsuario(string email)
+        public static int ExtraerIdUsuarioPorEmail(string email)
         {
             int idUsu;
 
@@ -298,6 +323,63 @@ namespace BGestionFAFA
             }
 
             return idUsu;
+
+        }
+
+        public static Perfil ExtraerPerfilPorId(int idUsuIniciado)
+        {
+
+            PerfilSQL sql;
+            Perfil perfilObtenido;
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+
+                 sql = conexion.Table<PerfilSQL>().Where(p => p.IdUsuario == idUsuIniciado).FirstOrDefault();
+
+            }
+
+            perfilObtenido = new Perfil
+            {
+                NombreUsuario = sql.NombreUsuario,
+                IdUsuario = sql.IdUsuario,
+                Nivel = sql.Nivel,
+                XpTotal = sql.XpTotal,
+                AvatarUrl = sql.AvatarUrl,
+               
+                
+            };
+
+            return perfilObtenido;
+        }
+
+        public static List<Juego> ExtraerTodosLosJuegos()
+        {
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // 1. Sacamos la lista de la tabla SQL
+                List<JuegoSQL> listaSQL = conexion.Table<JuegoSQL>().ToList();
+
+                // 2. La convertimos a una lista de Juegos "normales"
+                List<Juego> listaNormal = new List<Juego>();
+
+                foreach (JuegoSQL itemSQL in listaSQL)
+                {
+                    // Creamos el objeto Juego y le pasamos los datos del SQL
+                    Juego juegoNormal = new Juego
+                    {
+                        Nombre = itemSQL.Nombre,
+                        ImagenURL = itemSQL.ImagenURL,
+                        ColorHex = itemSQL.ColorHex
+                        // Si tu clase Juego tiene más propiedades (como UId), añádelas aquí
+                    };
+
+                    listaNormal.Add(juegoNormal);
+                }
+
+                return listaNormal;
+            }
 
         }
 

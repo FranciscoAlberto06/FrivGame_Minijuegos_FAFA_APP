@@ -42,7 +42,7 @@ public partial class PaginaRegistro : ContentPage
             ApiSQLiteFAFA.ComprobarSiExisteNombreDePerfil(eNombreUsuario.Text);
 
             // 3.2. Creamos el perfil
-            Perfil perfilNuevo = new Perfil(ususActualId, null, eNombreUsuario.Text); // TODO: Configurar avatar a elegir ahora mismo null 
+            Perfil perfilNuevo = new Perfil(ususActualId, eNombreUsuario.Text,null ); // TODO: Configurar avatar a elegir ahora mismo null 
 
             // 3.3. Guardamos el perfil
             ApiSQLiteFAFA.InsertarPerfil(perfilNuevo);
