@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.PageRanking"
+             Title="PageRanking"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto, Auto, *">
+
+        <Border Grid.Row="0" 
+                Margin="0,0,0,10" 
+                Padding="20,40,20,20" 
+                BackgroundColor="#1E1E1E" 
+                StrokeThickness="0">
+            <VerticalStackLayout Spacing="5">
+                <Label Text="HALL OF FAME" 
+                       TextColor="Crimson" 
+                       FontSize="32" 
+                       FontAttributes="Bold" 
+                       HorizontalOptions="Center"
+                       CharacterSpacing="2"/>
+                <Label Text="MEJORES MARCAS PERSONALES" 
+                       TextColor="Gray" 
+                       FontSize="12" 
+                       HorizontalOptions="Center"
+                       FontAttributes="Italic"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Grid.Row="1" 
+                Margin="20,10" 
+                Padding="15,5" 
+                BackgroundColor="#2A2A2A" 
+                Stroke="#333333" 
+                StrokeThickness="1">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12"/>
+            </Border.StrokeShape>
+
+            <HorizontalStackLayout Spacing="15">
+                <Label Text="🎮" VerticalOptions="Center" FontSize="20"/>
+                <Picker x:Name="pickerJuegos" 
+                        Title="Selecciona un juego..." 
+                        TitleColor="Gray"
+                        TextColor="White"
+                        FontSize="16"
+                        WidthRequest="300"
+                        HorizontalOptions="Start"
+                        SelectedIndexChanged="OnJuegoCambiado" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <CollectionView Grid.Row="2" 
+                        x:Name="miCollectionView" 
+                        VerticalScrollBarVisibility="Never">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Margin="0,50">
+                    <Label Text="No hay partidas registradas" TextColor="Gray" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,12" 
+                            Padding="18" 
+                            BackgroundColor="#252525" 
+                            StrokeThickness="2">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="15"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="40, *, Auto">
+
+                            <Label Text="🏆" FontSize="22" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="15,0">
+                                <Label Text="{Binding IdPerfil, StringFormat='Jugador ID: {0}'}" 
+                                       TextColor="White" 
+                                       FontSize="17"
+                                       FontAttributes="Bold"/>
+                               
+                            </VerticalStackLayout>
+
+                            <HorizontalStackLayout Grid.Column="2" VerticalOptions="Center">
+                                <Label Text="{Binding Puntuacion}" 
+                                       TextColor="White" 
+                                       FontSize="24" 
+                                       FontAttributes="Bold"/>
+                                <Label Text=" PTS" 
+                                       TextColor="Crimson" 
+                                       FontSize="12" 
+                                       FontAttributes="Bold"
+                                       VerticalOptions="End" 
+                                       Margin="4,0,0,4"/>
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2" 
+                Text="VOLVER" 
+                Clicked="OnVolverClicked"
+                BackgroundColor="#333333"
+                TextColor="White"
+                CornerRadius="25"
+                HeightRequest="50"
+                WidthRequest="120"
+                HorizontalOptions="Center"
+                Margin="0,0,0,20"
+                FontSize="12"
+                FontAttributes="Bold"/>
+
+    </Grid>
+</ContentPage>

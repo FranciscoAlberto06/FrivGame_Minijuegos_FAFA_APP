@@ -20,14 +20,14 @@ public partial class JuegoTopos : ContentPage
     // Variable global para almacenar el estado de los topos, si estan arriba, abajo o golpeados
     Image[,] ArrayTopos = new Image[3, 3];
 
-    int PerfilUidActual;
+    string PerfilUidActual;
 
     
 
     #endregion
 
     
-    public JuegoTopos(int uIdPerfil)
+    public JuegoTopos(string uIdPerfil)
     {
         InitializeComponent();
 
@@ -183,7 +183,6 @@ public partial class JuegoTopos : ContentPage
     }
     #endregion
 
-
     #region CONFIGURACION CRONOMETRO
     private void ConfigurarCronometro()
     {
@@ -218,7 +217,17 @@ public partial class JuegoTopos : ContentPage
         bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
 
         // 3. Guardamos partida
-        //ApiSQLiteFAFA.GuardarPartida(PerfilUidActual,);
+        // 3.1. Preparamos los datos de la partida en nuestro modelo
+        Partida partidaFinal = new Partida
+        {
+            IdPerfil = PerfilUidActual,
+            IdJuego = 1, // ID del juego de topos en la base de datos
+            Puntuacion = int.Parse(lbPuntaje.Text.Replace("Puntos: ", "")),
+            TiempoSegundos = (int)cronometro.Elapsed.TotalSeconds,
+        };
+
+        // Insertamos la partida en la base de datos
+        ApiSQLiteFAFA.InsertarPartida(partidaFinal);
 
         // 4. Mostramos una alerta con el puntaje final
         DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
@@ -251,7 +260,7 @@ public partial class JuegoTopos : ContentPage
 
         // Obtención del puntaje actual directamente desde el Label de la interfaz
         int puntosActuales = int.Parse(lbPuntaje.Text.Replace("Puntos: ", ""));
-        int nuevoPuntaje;
+        int nuevoPuntaje = 0;
 
         // Verificacion del estado de la imagen para sumar puntos
         if (boton.StyleId == EstadoTopo.Arriba.ToString())
@@ -266,10 +275,12 @@ public partial class JuegoTopos : ContentPage
             boton.StyleId = EstadoTopo.GolpeadoDorado.ToString();
             nuevoPuntaje = puntosActuales + 20;
         }
-        else
+        else if (puntosActuales != 0) // Para que no sea negativo no se pierde punto estando en 0 
         {
             // Si fallamos nos resta puntos
-            nuevoPuntaje = puntosActuales - 5;
+            
+                nuevoPuntaje = puntosActuales - 5;
+            
         }
 
         // Actualización de la puntuacion inutil

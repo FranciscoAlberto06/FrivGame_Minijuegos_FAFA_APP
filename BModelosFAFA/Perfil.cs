@@ -28,7 +28,7 @@ namespace BModelosFAFA
 
         }
 
-        public int PerfilUid { get; set; }
+        public string PerfilUid { get; set; }
 
         public int IdUsuario { get; set; }
         public int Nivel { 

@@ -16,6 +16,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private int _colActual = 0;
     private string _intentoActual = "";
     private Border[,] _celdas; // un array bidimensional para almacenar las celdas del tablero, cada celda es un Border que contiene un Label con la letra
+    private string UidPerfilActual;
     #endregion
 
     #region PROPIEDADES
@@ -52,10 +53,10 @@ public partial class AdivinarLaPalabra2 : ContentPage
     }
     #endregion
 
-    public AdivinarLaPalabra2()
+    public AdivinarLaPalabra2(string uIdPerfil)
     {
         InitializeComponent();
-
+        UidPerfilActual = uIdPerfil;
 
         ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
         CrearTablero(); // Creamos el tablero adaptandose a la palabra objetivo

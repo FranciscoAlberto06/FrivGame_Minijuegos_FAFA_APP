@@ -175,13 +175,11 @@ namespace BGestionFAFA
             {
                 PartidaSQL partidaSQL = new PartidaSQL
                 {
-                    // Si el Uuid viene vacío desde la app, lo generamos aquí
-                    Uuid = string.IsNullOrEmpty(partida.Uuid) ? Guid.NewGuid().ToString() : partida.Uuid,
                     IdJuego = partida.IdJuego,
+                    IdPerfil = partida.IdPerfil,
                     Puntuacion = partida.Puntuacion,
                     TiempoSegundos = partida.TiempoSegundos,
                     Victoria = partida.Victoria,
-                    FechaHora = partida.FechaHora,
                     Sincronizada = false
                 };
                 conexion.Insert(partidaSQL);
@@ -342,6 +340,7 @@ namespace BGestionFAFA
             perfilObtenido = new Perfil
             {
                 NombreUsuario = sql.NombreUsuario,
+                PerfilUid = sql.PerfilUid,
                 IdUsuario = sql.IdUsuario,
                 Nivel = sql.Nivel,
                 XpTotal = sql.XpTotal,
@@ -369,6 +368,7 @@ namespace BGestionFAFA
                     // Creamos el objeto Juego y le pasamos los datos del SQL
                     Juego juegoNormal = new Juego
                     {
+                        IdJuego = itemSQL.IdJuego,
                         Nombre = itemSQL.Nombre,
                         ImagenURL = itemSQL.ImagenURL,
                         ColorHex = itemSQL.ColorHex
@@ -381,6 +381,64 @@ namespace BGestionFAFA
                 return listaNormal;
             }
 
+        }
+
+        public static List<Partida> ExtraerrMejoresMarcasPorJuego(int idJuegoEnviado)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // Traemos todas las partidas de ese juego
+                List<PartidaSQL> todasLasPartidasDelJuego = conexion.Table<PartidaSQL>()
+                                                      .Where(p => p.IdJuego == idJuegoEnviado)
+                                                      .ToList();
+
+                // Sacamos las mejores marcas de cada jugador segun lo que se valore en el juego
+                List<Partida> rankingMejoresMarcas = ExtraerMejoresMarcasPorJugador(todasLasPartidasDelJuego, idJuegoEnviado);
+
+                return rankingMejoresMarcas;
+            }
+        }
+
+        private static List<Partida> ExtraerMejoresMarcasPorJugador(List<PartidaSQL> todasLasPartidasDelJuego, int idjuego)
+        {
+            if (todasLasPartidasDelJuego == null || todasLasPartidasDelJuego.Count == 0)
+            {
+                return new List<Partida>();
+            }
+            // Variable que va a guardar la mejores marcas de cada jugador, segun el juego
+            List<PartidaSQL> rankingMejoresMarcasJuego = new List<PartidaSQL>();
+
+            // En funcion del id del juego, vamos a ver que se la valora mas de los datos de la partidas
+            switch (idjuego)
+            {
+                case 1 or 4:
+                    // En el caso de TOPOS, lo que mas valoramos es la puntuacion, asi que ordenamos por puntuacion
+                    rankingMejoresMarcasJuego = todasLasPartidasDelJuego
+                                                                      .GroupBy(p => p.IdPerfil) // Agrupamos por Jugador (IdPerfil)
+                                                                      .Select(grupo => grupo.OrderByDescending(p => p.Puntuacion).First()) // De cada jugador, nos quedamos solo con su partida con más puntos
+                                                                      .OrderByDescending(p => p.Puntuacion) // Ordenamos a todos los finalistas de mayor a menor puntos
+                                                                      .Take(250) // Nos quedamos solo con los 250 mejores
+                                                                      .ToList();
+                    break;
+
+            }
+
+            // Lista en la que guardamaos la mejores marcas resultantes pero en el modelo no sql
+            List<Partida> listaNormalizada = new List<Partida>();
+
+            foreach (PartidaSQL itemSQL in rankingMejoresMarcasJuego)
+            {
+                listaNormalizada.Add(new Partida
+                {
+                    IdPerfil = itemSQL.IdPerfil,
+                    IdJuego = itemSQL.IdJuego,
+                    Puntuacion = itemSQL.Puntuacion,
+                    TiempoSegundos = itemSQL.TiempoSegundos,
+                    Victoria = itemSQL.Victoria,
+                });
+            }
+
+            return listaNormalizada;
         }
 
         #endregion

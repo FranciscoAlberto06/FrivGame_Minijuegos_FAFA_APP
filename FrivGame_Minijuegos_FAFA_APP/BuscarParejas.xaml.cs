@@ -8,7 +8,7 @@ public partial class BuscarParejas : ContentPage
     string temaActual = "";
 
 
-    public BuscarParejas(string temaElegido)
+    public BuscarParejas(string temaElegido, string uidPerfil)
     {
         InitializeComponent();
         temaActual = temaElegido;

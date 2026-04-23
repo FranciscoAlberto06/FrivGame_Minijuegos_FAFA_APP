@@ -1,19 +1,26 @@
+using BGestionFAFA;
+using BModelosFAFA;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class _2048game : ContentPage
 {
+    #region VARIABLES GLOBALES
     // Esta variable va a representar que zona del tablero esta ocupada por cada ficha y su valor 
     int[,] board = new int[4, 4];
+
     Border[,] listaBorders = new Border[4, 4]; 
     Label[,] listaLabels = new Label[4, 4];
     int puntuacion = 0;
     Random rnd = new Random();
+    string PerfilUidActual;
+    #endregion
 
-    public _2048game()
+    public _2048game(string uIdPerfil)
     {
         InitializeComponent();
+        PerfilUidActual = uIdPerfil;
 
         CrearTablero();
         IniciarJuego();
@@ -363,6 +370,17 @@ public partial class _2048game : ContentPage
             RefrescarPantalla();
             if (ComprobarSiHaPerdido())
             {
+                // 3. Guardamos partida
+                // 3.1. Preparamos los datos de la partida en nuestro modelo
+                Partida partidaFinal = new Partida
+                {
+                    IdPerfil = PerfilUidActual,
+                    IdJuego = 4, // ID del juego de topos en la base de datos
+                    Puntuacion = puntuacion,
+                };
+
+                // Insertamos la partida en la base de datos
+                ApiSQLiteFAFA.InsertarPartida(partidaFinal);
                 await DisplayAlert("¡Has perdido!", "No hay mas movimientos posibles", "Cerrar");
                 tableroGrid.IsEnabled = false; // Deshabilitamos el tablero para que no se puedan hacer más movimientos
             }

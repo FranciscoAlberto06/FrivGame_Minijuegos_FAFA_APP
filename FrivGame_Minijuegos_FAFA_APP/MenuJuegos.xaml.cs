@@ -8,7 +8,7 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class MenuJuegos : ContentPage
 {
-    public Perfil PerfilActual { get; set; }
+    Perfil PerfilActual = new Perfil();
 
     // Variable que local que no va a decir en que plataforma nos encontramos
     bool esWindows = DeviceInfo.Current.Platform == DevicePlatform.WinUI;
@@ -47,9 +47,9 @@ public partial class MenuJuegos : ContentPage
     private void CrearMenuJuegos()
     {
 
-        #region SACAR JUEGO EXISTENTES
-        #endregion
+        // 1.- Obtenemos lista de juegos existente en la base de datos
         List<Juego> listaJuegos = ApiSQLiteFAFA.ExtraerTodosLosJuegos();
+
         // 2.- Recorremos la lista de objetos Juego
         foreach (Juego juego in listaJuegos)
         {
@@ -166,21 +166,29 @@ public partial class MenuJuegos : ContentPage
     private async void MoverAlJuego(string nombreDelJuego)
     {
         // Creamos un switch que nos dirija a la pagina del juego correspondiente segun el nombre del juego que se haya pulsado
+        // Pasandole el id del perfil actual, y id del juego
         switch (nombreDelJuego)
         {
             case "TOPOS":
                 await Navigation.PushAsync(new JuegoTopos(PerfilActual.PerfilUid));
                 break;
             case "WORDLE":
-                await Navigation.PushAsync(new AdivinarLaPalabra2());
+                await Navigation.PushAsync(new AdivinarLaPalabra2(PerfilActual.PerfilUid));
                 break;
             case "PAREJAS":
-                await Navigation.PushAsync(new SeleccionTemaParejas());
+                await Navigation.PushAsync(new SeleccionTemaParejas(PerfilActual.PerfilUid));
                 break;
             case "2048":
-                await Navigation.PushAsync(new _2048game());
+                await Navigation.PushAsync(new _2048game(PerfilActual.PerfilUid));
                 break;
         }
+
+    }
+
+
+    private async void OnRankingGlobalClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new PageRanking(PerfilActual.PerfilUid));
 
     }
 }
