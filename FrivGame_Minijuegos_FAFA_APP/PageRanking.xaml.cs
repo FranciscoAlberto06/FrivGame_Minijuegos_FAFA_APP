@@ -17,13 +17,13 @@ public partial class PageRanking : ContentPage
 
     private void CargarSelectorJuegos()
     {
-        // 1. Definimos los juegos disponibles (puedes traerlos de la DB si prefieres)
+        // 1. Sacamos de la bd los juegos disponibles 
         listaJuegos = ApiSQLiteFAFA.ExtraerTodosLosJuegos();
 
         // 2. Asignamos los nombres al Picker
         pickerJuegos.ItemsSource = listaJuegos.Select(j => j.Nombre).ToList();
 
-        // 3. Seleccionamos el primero por defecto (esto disparará OnJuegoCambiado)
+        // 3. Seleccionamos el primero por defecto, esto activara el evento de cambio y cargara el ranking del primer juego
         pickerJuegos.SelectedIndex = 0;
     }
 

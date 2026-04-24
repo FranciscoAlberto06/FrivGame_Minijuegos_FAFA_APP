@@ -1,5 +1,6 @@
 ﻿
 using BGestionFAFA;
+using BModelosFAFA;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -16,7 +17,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private int _colActual = 0;
     private string _intentoActual = "";
     private Border[,] _celdas; // un array bidimensional para almacenar las celdas del tablero, cada celda es un Border que contiene un Label con la letra
-    private string UidPerfilActual;
+    private string UidPerfilActual; // Guarda el id del usuario que esta jugando ahora mismo
+    private int idPartidaActual; // Guarda el id de la partida que se jueg en el momento
+    private bool juegoGanado = false; // Para controlar si el juego ya se ha ganado o no
     #endregion
 
     #region PROPIEDADES
@@ -59,7 +62,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
         UidPerfilActual = uIdPerfil;
 
         ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
-        CrearTablero(); // Creamos el tablero adaptandose a la palabra objetivo
+        CrearTableroYPartida(); // Creamos el tablero adaptandose a la palabra objetivo
         CrearTeclado(); // Creamos el teclado con sus botones y su funcionalidad
 
     }
@@ -173,7 +176,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     #region CREACIONES DE ELEMENTOS VISUALES
 
-    public void CrearTablero()
+    public void CrearTableroYPartida()
     {
         // 1. Primero comprobamos el largo de la palabra a adivinar, para ajustar la cantidad de las columnas que necesita la palabra en el tablero 
         int columnas = PalabraSecreta.Length;
@@ -218,6 +221,22 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 GridTablero.Add(cuadro, c, fila);
             }
         }
+
+        #region CREAR PARTIDA EN BD
+        Partida partidaNueva = new Partida()
+        {
+            IdJuego = 2, // El ID del juego de adivinar la palabra
+            IdPerfil = UidPerfilActual,
+            Victoria = false, // Por defecto la partida se crea como no ganada, y se actualizará a ganada si el usuario acierta la palabra
+
+        };
+
+        // Insertamos la partida
+        idPartidaActual = ApiSQLiteFAFA.InsertarPartidaYDevolverIDPartida(partidaNueva); // Guardamos el ID de la partida actual para luego actualizarla al finalizar el juego
+
+
+        #endregion
+
     }
 
     private void CrearTeclado()
@@ -466,6 +485,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 KeyboardLayout.IsEnabled = false; // Deshabilitamos el teclado para que no pueda seguir escribiendo al haber ganado
                 ButtonReiniciar.IsVisible = true; // Hacemos visible el boton de reiniciar para que pueda volver a jugar
                 bSignificado.IsVisible = true; // Hacemos visible el boton de significado para que pueda consultar el significado de la palabra al haber ganado
+                juegoGanado = true; // Indicamos que el juego se ha ganado para luego actualizar la partida en la base de datos
                 throw new Exception("¡ENHORABUENA! HAS ACERTADO!");
             }
             else
@@ -481,6 +501,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                     KeyboardLayout.IsEnabled = false; // Deshabilitamos el teclado para que no pueda seguir escribiendo al haber ganado
                     ButtonReiniciar.IsVisible = true; // Hacemos visible el boton de reiniciar para que pueda volver a jugar
                     bSignificado.IsVisible = true;
+                    juegoGanado = false; // Indicamos que el juego se ha perdido para luego actualizar la partida en la base de datos
                     throw new Exception("FIN DEL JUEGO. LA PALABRA ERA: " + PalabraSecreta);
 
 
@@ -496,7 +517,11 @@ public partial class AdivinarLaPalabra2 : ContentPage
         catch (Exception error) {
 
             LabelMensaje.Text = error.Message;
-
+            // Si hemos ganado la partida atualizamos la victoria de la partida
+            if (juegoGanado)
+            {
+                ApiSQLiteFAFA.ActualizarPartidaAVictoria(idPartidaActual); // Actualizamos la partida a victoria si se ha ganado
+            }
 
         }
         finally {
@@ -520,7 +545,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private void RecargarJuego(object sender, EventArgs e)
     {
         ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
-        CrearTablero(); // Creamos el tablero adaptandose a la palabra objetivo
+        CrearTableroYPartida(); // Creamos el tablero adaptandose a la palabra objetivo
         // El teclado no hace falta volver a crearlo porque no cambia
         bSignificado.IsVisible = false; // Volvemos a ocultar el boton de significado para que no se vea en medio del juego
         ButtonReiniciar.IsVisible = false; // Volvemos a ocultar el boton de reiniciar para que no se vea en medio del juego

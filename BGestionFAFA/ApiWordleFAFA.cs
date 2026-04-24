@@ -15,8 +15,9 @@ namespace BGestionFAFA
 
         // Generador de numeros aleatorios
         private static Random generadorAleatorio = new Random();
+        private static string palabraConAcentos = "";
 
-        // 1. Limpiamos los acentos usando Replace
+        // Limpiamos los acentos usando Replace
         public static string QuitarAcentos(string texto)
         {
             // Lo pasamos a mayusculas y le quitamos los espacios al principio y al final

@@ -169,6 +169,25 @@ namespace BGestionFAFA
             }
         }
 
+        public static int InsertarPartidaYDevolverIDPartida(Partida partida)
+        {
+            PartidaSQL partidaSQL;
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                partidaSQL = new PartidaSQL
+                {
+                    IdJuego = partida.IdJuego,
+                    IdPerfil = partida.IdPerfil,
+                    Puntuacion = partida.Puntuacion,
+                    TiempoSegundos = partida.TiempoSegundos,
+                    Victoria = partida.Victoria,
+                    Sincronizada = false
+                };
+                conexion.Insert(partidaSQL);
+            }
+            return partidaSQL.IdPartida;
+        }
+
         public static void InsertarPartida(Partida partida)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
@@ -420,6 +439,22 @@ namespace BGestionFAFA
                                                                       .Take(250) // Nos quedamos solo con los 250 mejores
                                                                       .ToList();
                     break;
+                case 2:
+                    // 1. Procesamos las partidas para calcular el balance de cada jugador
+                    rankingMejoresMarcasJuego = todasLasPartidasDelJuego
+                        .GroupBy(p => p.IdPerfil)
+                        .Select(grupo => new PartidaSQL // Creamos objetos Partida directamente
+                        {
+                            IdPerfil = grupo.Key,
+                            // Calculamos: (Número de True) - (Número de False)
+                            Puntuacion = grupo.Count(p => p.Victoria == true) - grupo.Count(p => p.Victoria == false),
+                            IdJuego = 2 // O el ID que corresponda a Wordle
+                        })
+                        .OrderByDescending(p => p.Puntuacion)
+                        .ToList();
+
+
+                    break;
 
             }
 
@@ -441,6 +476,30 @@ namespace BGestionFAFA
             return listaNormalizada;
         }
 
+
+
+        #endregion
+
+        #region METODOS DE ACTUALIZACION
+        // Este metodo se usara para actualiazar a visotira cuando se gane una aprtida de wordle
+        public static void ActualizarPartidaAVictoria(int idPartidaActual)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // 1. Buscamos la partida original que tiene tu IdPerfil
+                PartidaSQL partida = conexion.Table<PartidaSQL>().FirstOrDefault(x => x.IdPartida == idPartidaActual);
+
+                // 2. Si la encuentra, SOLO le cambiamos la victoria
+                if (partida != null)
+                {
+                    partida.Victoria = true;
+
+                    // 3. Hacemos el Update del objeto entero, así no se borra tu IdPerfil
+                    conexion.Update(partida);
+                }
+            }
+
+        }
         #endregion
 
     }

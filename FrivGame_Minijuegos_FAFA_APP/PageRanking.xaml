@@ -4,7 +4,7 @@
              x:Class="FrivGame_Minijuegos_FAFA_APP.PageRanking"
              Title="PageRanking"
              Shell.NavBarIsVisible="False">
-    <Grid RowDefinitions="Auto, Auto, *">
+    <Grid RowDefinitions="Auto, Auto, *, Auto">
 
         <Border Grid.Row="0" 
                 Margin="0,0,0,10" 
@@ -12,7 +12,7 @@
                 BackgroundColor="#1E1E1E" 
                 StrokeThickness="0">
             <VerticalStackLayout Spacing="5">
-                <Label Text="HALL OF FAME" 
+                <Label Text="RANKINGS" 
                        TextColor="Crimson" 
                        FontSize="32" 
                        FontAttributes="Bold" 
@@ -63,7 +63,7 @@
                 <DataTemplate>
                     <Border Margin="0,0,0,12" 
                             Padding="18" 
-                            BackgroundColor="#252525" 
+                            BackgroundColor="{Binding ColorFondoRanking}" 
                             StrokeThickness="2">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="15"/>
@@ -99,7 +99,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Button Grid.Row="2" 
+        <Button Grid.Row="3" 
                 Text="VOLVER" 
                 Clicked="OnVolverClicked"
                 BackgroundColor="#333333"
