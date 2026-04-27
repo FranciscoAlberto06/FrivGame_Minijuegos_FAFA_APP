@@ -11,7 +11,7 @@ public partial class PaginaRegistro : ContentPage
 		InitializeComponent();
 	}
 
-    private void clickRegistrar(object sender, EventArgs e)
+    private async void clickRegistrar(object sender, EventArgs e)
     {
         int ususActualId;
         bool errorDetectado = false;
@@ -53,6 +53,7 @@ public partial class PaginaRegistro : ContentPage
             #endregion
 
             #region GUARDADO EN LA NUBE
+            //await ApiAivenFAFA.Pruebas();
             #endregion
 
             // 4. Mostramos un mensaje de estado al usuario 

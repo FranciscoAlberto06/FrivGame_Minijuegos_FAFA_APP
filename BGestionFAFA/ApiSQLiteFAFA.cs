@@ -21,6 +21,7 @@ namespace BGestionFAFA
         // Ruta de la carpeta personal + archivo
         static string rutaCompletaPersonal = "";
 
+
         #region COMPROBACIONS INICIALES
         public static void ComprobarRutasSQL(string directorioTrabajo)
         {
@@ -45,7 +46,10 @@ namespace BGestionFAFA
             // 4.- Una vez comprobada o creada iniciamos verificamos que se puede conectar y que este creada las tablas necesarias
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
+                // Creamos las tablas necesarias si no estan creadas
                 CrearTablasNecesaria(conexion);
+                // Y hacemos las inserciones iniciales necesarias, como los juegos predefinidos y los logros predefinidos
+                InsercionesIniciales(conexion);
             }
 
 
@@ -56,21 +60,26 @@ namespace BGestionFAFA
         {
             // Esto hara que se crren la tablas necesarias si no estan creadas
             conexion.CreateTable<UsuarioSQL>();
-
-            conexion.CreateTable<UsuarioLogroSQL>();
+            conexion.CreateTable<PerfilSQL>();
+            conexion.CreateTable<LogroSQL>();
             conexion.CreateTable<AmistadSQL>();
             conexion.CreateTable<JuegoSQL>();
             conexion.CreateTable<PartidaSQL>();
-            conexion.CreateTable<PerfilSQL>();
-            conexion.CreateTable<LogroSQL>();
+            conexion.CreateTable<PerfilLogroSQL>();
 
-            // 1. Conteo síncrono (usando el modelo de la tabla SQL)
+
+
+        }
+
+        private async static Task InsercionesIniciales(SQLiteConnection conexion)
+        {
+            // 1. Conteo de juego
             int conteoJuegos = conexion.Table<JuegoSQL>().Count();
+            int conteoLogros = conexion.Table<LogroSQL>().Count();
 
             if (conteoJuegos == 0)
             {
                 // 2. Definimos la lista con el modelo "Juego" (el que entiende tu método)
-                // USAMOS List<Juego> para que el foreach funcione
                 List<Juego> juegosIniciales = new List<Juego>
                 {
                     new Juego { Nombre = "TOPOS", ImagenURL = "portada_topos.png", ColorHex = "#DC143C" },
@@ -84,6 +93,33 @@ namespace BGestionFAFA
                 {
                     // 4. Se lo pasamos a tu método que ya se encarga de convertirlo a JuegoSQL e insertar
                     InsertarJuego(j);
+                }
+            }
+
+            if(conteoLogros == 0)
+            {
+                List<LogroSQL> logrosIniciales = new List<LogroSQL>
+                {
+                    // LOGROS PARA TOPOS 
+                    new LogroSQL { IdJuego = 1, Nombre = "Un topo unico", CondicionDesbloqueo = "Golpea 1 topos dorado", XpPremio = 1500, Sincronizada = true },
+            
+                    // LOGROS PARA WORDLE 
+                    new LogroSQL { IdJuego = 2, Nombre = "Diccionario Humano", CondicionDesbloqueo = "Adivina una palabra a la primera", XpPremio = 200, Sincronizada = true },
+                    new LogroSQL { IdJuego = 2, Nombre = "Persistente", CondicionDesbloqueo = "Adivina 5 palabras seguidas", XpPremio = 100, Sincronizada = true },
+
+                    // LOGROS PARA PAREJAS 
+                    new LogroSQL { IdJuego = 3, Nombre = "Memoria de Elefante", CondicionDesbloqueo = "Completa el tablero sin fallos", XpPremio = 300, Sincronizada = true },
+                    new LogroSQL { IdJuego = 3, Nombre = "Principiante", CondicionDesbloqueo = "Encuentra tu primera pareja", XpPremio = 20, Sincronizada = true },
+
+                    // LOGROS PARA 2048
+                    new LogroSQL { IdJuego = 4, Nombre = "Matemático", CondicionDesbloqueo = "Llega a la ficha 1024", XpPremio = 250, Sincronizada = true },
+                    new LogroSQL { IdJuego = 4, Nombre = "¡El Rey de los Números!", CondicionDesbloqueo = "Llega a la ficha 2048", XpPremio = 500, Sincronizada = true }
+                };
+
+                // Insertamos directamente en la tabla de logros
+                foreach (LogroSQL logro in logrosIniciales)
+                {
+                    conexion.Insert(logro);
                 }
             }
         }
@@ -142,7 +178,6 @@ namespace BGestionFAFA
                     Nombre = logro.Nombre,
                     CondicionDesbloqueo = logro.CondicionDesbloqueo,
                     XpPremio = logro.XpPremio,
-                    Sincronizada = false,
                 };
                 conexion.Insert(logroSQL);
             }
@@ -221,14 +256,14 @@ namespace BGestionFAFA
             }
         }
 
-        public static void InsertarUsuarioLogro(Usuario usu, Logro logro)
+        public static void InsertarPerfilLogro(string idPerfil, int idLogro)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
-                UsuarioLogroSQL usuarioLogroSQL = new UsuarioLogroSQL
+                PerfilLogroSQL usuarioLogroSQL = new PerfilLogroSQL
                 {
-                    IdUsuario = usu.IdUsuario,
-                    IdLogro = logro.IdLogro,
+                    IdPerfil = idPerfil,
+                    IdLogro = idLogro,
                     FechaObtencion = DateTime.Now,
                     Sincronizado = false
                 };
@@ -324,6 +359,21 @@ namespace BGestionFAFA
 
             }
 
+        }
+
+        public static bool ComprobarSiTieneElLogro(string perfilUidActual, int v)
+        {
+  
+            bool tenerLogro;
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // Miramos si este perfil tiene este logro en la tabla de perfil logro
+                tenerLogro = conexion.Table<PerfilLogroSQL>().Where(pl => pl.IdPerfil == perfilUidActual && pl.IdLogro == v).Any();
+
+            }
+            return tenerLogro;
+                
         }
 
         #endregion
@@ -500,6 +550,49 @@ namespace BGestionFAFA
             }
 
         }
+
+        public static void ActualizarPerfilLogrosPorIDUsuario(int idUsuario)
+        {
+            using (SQLiteConnection conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // 1. Buscamos el perfil asociado a ese ID de usuario
+                // Especificamos el tipo PerfilSQL explícitamente
+                PerfilSQL perfil = conexion.Table<PerfilSQL>().FirstOrDefault(p => p.IdUsuario == idUsuario);
+
+                if (perfil != null)
+                {
+                    // 2. Obtenemos la lista de IDs de logros (int) que tiene ese PerfilUid específico
+                    List<int> listaLogrosIds = conexion.Table<PerfilLogroSQL>()
+                                                    .Where(ul => ul.IdPerfil == perfil.PerfilUid)
+                                                    .Select(ul => ul.IdLogro)
+                                                    .ToList();
+
+                    // 3. Sumamos la XP de la tabla de Logros
+                    int xpReal = 0;
+
+                    if (listaLogrosIds.Count > 0)
+                    {
+                        xpReal = conexion.Table<LogroSQL>()
+                                      .Where(l => listaLogrosIds.Contains(l.IdLogro))
+                                      .Sum(l => l.XpPremio);
+                    }
+
+                    // 4. Actualizamos el perfil solo si los datos han cambiado
+                    if (perfil.XpTotal != xpReal)
+                    {
+                        perfil.XpTotal = xpReal;
+
+
+                        // Al cambiar XP o Nivel, marcamos como no sincronizada para subir a Aiven
+                        perfil.Sincronizada = false;
+
+                        conexion.Update(perfil);
+                    }
+                }
+            }
+        }
+
+
         #endregion
 
     }

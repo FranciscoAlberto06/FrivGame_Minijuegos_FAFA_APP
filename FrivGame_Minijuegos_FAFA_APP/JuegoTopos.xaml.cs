@@ -274,6 +274,13 @@ public partial class JuegoTopos : ContentPage
             boton.Source = "hueco_topodorado_golpeado.png";
             boton.StyleId = EstadoTopo.GolpeadoDorado.ToString();
             nuevoPuntaje = puntosActuales + 20;
+            #region LOGRO TOPO DORADOR
+            // Comprobamos si tiene el logro de golpear un topo dorado, si no lo tiene se lo damos
+            if (!ApiSQLiteFAFA.ComprobarSiTieneElLogro(PerfilUidActual, 1)) {
+                ApiSQLiteFAFA.InsertarPerfilLogro(PerfilUidActual, 1);
+  
+            }
+            #endregion
         }
         else if (puntosActuales != 0) // Para que no sea negativo no se pierde punto estando en 0 
         {

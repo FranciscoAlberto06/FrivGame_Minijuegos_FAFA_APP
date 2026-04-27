@@ -13,7 +13,7 @@ public partial class PageInicioSesion : ContentPage
         CargarBD();
 	}
 
-    private void CargarBD()
+    private async void CargarBD()
     {
    
         // Cargamos siempre los datos locales del dispositivo
@@ -24,15 +24,16 @@ public partial class PageInicioSesion : ContentPage
         #endregion
 
         // TODO: Para cuando hagamosla parte de la nube
-        //// Comprobamos el estado de la red
-        //NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
+        //Comprobamos el estado de la red
+        NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
 
-        //// Si tenemos conexion a internet actualizamos datos nuevo que hubiera en la nube
-        //if (accesoRed == NetworkAccess.Internet)
-        //{
-        //    #region CARGAR DATOS DE LA NUBE
-        //    #endregion
-        //}
+        // Si tenemos conexion a internet actualizamos datos nuevo que hubiera en la nube
+        if (accesoRed == NetworkAccess.Internet)
+        {
+            #region CARGAR DATOS DE LA NUBE
+            await ApiAivenFAFA.CargarDatosNuevosDesdeAiven(FileSystem.AppDataDirectory);
+            #endregion
+        }
 
     }
 

@@ -29,12 +29,12 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="32"/>
                     </Border.StrokeShape>
-                    <Image Source="{Binding RutaAvatar}"/>
+                    <Image Source="{Binding RutaAvatar}" Aspect="AspectFill"/>
                 </Border>
 
                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
                     <Label Text="{Binding NombreUsuario}" FontSize="20" FontAttributes="Bold" TextColor="White"/>
-                    <Label Text="JUGADOR ACTIVO" FontSize="12" TextColor="#888888" Margin="0,-2,0,0"/>
+                    <Label Text="JUGADOR ACTIVO" FontSize="11" TextColor="#888888" Margin="0,-2,0,0"/>
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
@@ -49,13 +49,27 @@
                              VerticalOptions="Center"
                              BackgroundColor="Transparent"
                              Aspect="AspectFit"
-                             Clicked="OnRankingGlobalClicked">
-          
-                </ImageButton>
+                             Clicked="OnRankingGlobalClicked"/>
 
                 <VerticalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,15,0,0">
-                    <ProgressBar Progress="{Binding BarraProgreso}" ProgressColor="Crimson" ScaleY="1.5"/>
+
+                    <HorizontalStackLayout HorizontalOptions="End" Margin="0,0,5,2">
+                        <Label Text="{Binding XpTotal}" 
+                               FontSize="13" 
+                               TextColor="White" 
+                               FontAttributes="Bold" />
+                        <Label Text=" / 1000 XP" 
+                               FontSize="11" 
+                               TextColor="#888888" 
+                               VerticalOptions="End" 
+                               Margin="2,0,0,1"/>
+                    </HorizontalStackLayout>
+
+                    <ProgressBar Progress="{Binding BarraProgreso}" 
+                                 ProgressColor="Crimson" 
+                                 ScaleY="2" />
                 </VerticalStackLayout>
+
             </Grid>
         </Border>
 

@@ -8,20 +8,17 @@ using System.Threading.Tasks;
 namespace BModelosSQLFAFA
 {
     [Table("UsuarioLogro")]
-    public class UsuarioLogroSQL
+    public class PerfilLogroSQL
     {
         [PrimaryKey, AutoIncrement]
-        public int Id { get; set; } // El ID que comentas
+        public int Id { get; set; }
 
-        public int IdUsuario { get; set; }
+        public string IdPerfil { get; set; }
         public int IdLogro { get; set; }
 
         public DateTime FechaObtencion { get; set; }
 
         public bool Sincronizado { get; set; }
 
-
-        // El booleano para saber si ya se subio a la nube
-        public bool Sincronizada { get; set; }
     }
 }

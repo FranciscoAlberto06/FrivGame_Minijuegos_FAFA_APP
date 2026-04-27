@@ -33,11 +33,12 @@ public partial class MenuJuegos : ContentPage
 
     private void CargarPerfil(int idUsuIniciado)
     {
+        // Actualizamos el perfil por si ha habido logro nuevos siempre, para que se muestren reflejados en el menu de juegos
+        ApiSQLiteFAFA.ActualizarPerfilLogrosPorIDUsuario(idUsuIniciado);
+
         // Sacamos el perfil 
         PerfilActual = ApiSQLiteFAFA.ExtraerPerfilPorId(idUsuIniciado);
 
-        // metemos experiencia para probar nuestro progressbar
-        PerfilActual.XpTotal = 3127;
 
         // Mandamos el unico perfil que va a haber siempre,a nuestro biding context
         this.BindingContext = PerfilActual;
@@ -46,7 +47,6 @@ public partial class MenuJuegos : ContentPage
 
     private void CrearMenuJuegos()
     {
-
         // 1.- Obtenemos lista de juegos existente en la base de datos
         List<Juego> listaJuegos = ApiSQLiteFAFA.ExtraerTodosLosJuegos();
 
