@@ -153,6 +153,7 @@ namespace BGestionFAFA
                 // Lo pasos a usuario sql
                 UsuarioSQL usuarioSQL = new UsuarioSQL
                 {
+                    NombreUsuario = usuario.NombreUsuario,
                     Email = usuario.Email,
                     Sincronizada = false,
                 };
@@ -314,6 +315,24 @@ namespace BGestionFAFA
             // Eliminamos esa contraseña en especifico
             SecureStorage.Default.Remove(claveSegura);
         }
+
+        public static async Task<bool> ComprobarExisteEnSecureStorage(int idUsu, string passwordActual)
+        {
+            string claveSegura = $"password_mail_{idUsu}";
+            // Intentamos recuperar lo que hay
+            string passGuardada = await SecureStorage.Default.GetAsync(claveSegura);
+
+            bool existe = false;
+
+            // Si lo que hay guardado es igual a lo que el usuario escribió, devolvemos true
+            if(passGuardada == passwordActual)
+            {
+                existe = true;
+            }
+
+            return existe;
+        }
+
         #endregion
 
         #region METODOS COMPROBACION EXISTENCIA

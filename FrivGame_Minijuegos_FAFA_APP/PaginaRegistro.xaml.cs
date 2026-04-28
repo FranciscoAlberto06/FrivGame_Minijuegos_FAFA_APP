@@ -17,47 +17,36 @@ public partial class PaginaRegistro : ContentPage
         bool errorDetectado = false;
         try
         {
-            #region  GUARDADO LOCAL
 
-            // 1. Validacion de campos vacios
-            if (string.IsNullOrWhiteSpace(eEmail.Text) ||
-                string.IsNullOrWhiteSpace(eNombreUsuario.Text) ||
-                string.IsNullOrWhiteSpace(ePassword.Text))
-            {
+            // 1. VALIDACIÓN INICIAL
+            if (string.IsNullOrWhiteSpace(eEmail.Text) || string.IsNullOrWhiteSpace(eNombreUsuario.Text) || string.IsNullOrWhiteSpace(ePassword.Text))
                 throw new Exception("Todos los campos son obligatorios.");
+
+            // 2. COMPROBAR CONEXIÓN (Vital si el registro depende de la nube)
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+                throw new Exception("Se requiere conexión a internet para registrarse.");
+
+            // 3. GUARDADO EN LA NUBE (Aiven asigna el ID Real)
+            // Insertamos el usuario y recuperamos el ID que MySQL generó automáticamente
+            int idRealAiven = await ApiAivenFAFA.InsertarUsuarioEnNube(eEmail.Text, eNombreUsuario.Text, ePassword.Text);
+
+            if (idRealAiven > 0)
+            {
+                // 4. CREAR PERFIL EN LA NUBE
+                // Ahora usamos el ID que nos dio Aiven, así no fallará la Foreign Key
+                string nuevoUid = Guid.NewGuid().ToString();
+                Perfil perfilParaNube = new Perfil(idRealAiven, eNombreUsuario.Text, null) { PerfilUid = nuevoUid };
+
+                await ApiAivenFAFA.InsertarPerfilDirectoEnNube(perfilParaNube);
+
+                // 5. SINCRONIZACIÓN HACIA DE(SQLite copia a Aiven)
+                await ApiAivenFAFA.CargarDatosNuevosDesdeAiven(FileSystem.AppDataDirectory);
+
+                // 6. GUARDAR CONTRASEÑA SEGURA (SecureStorage local)
+                ApiSQLiteFAFA.GuardarContrasenaOculta(idRealAiven, ePassword.Text);
+
+
             }
-
-            // 2 Comprobacion y creacion de usuario
-            // 2.1. Comprobamos que no exista ya el usuario antes de hacer nada
-            ApiSQLiteFAFA.ComprobarSiExisteUsuario(eEmail.Text);
-
-            // 2.2. Creamos el usuario a agregar si todo a salido bien en la comprobacion
-            Usuario usuNuevo = new Usuario(eEmail.Text);
-
-            // 2.3. Metemos el usuario en SQLite y ademas extreamos su id
-            ususActualId = ApiSQLiteFAFA.InsertarUsuarioYDevolverID(usuNuevo);
-
-            // 3 Comprobacion y creacion de perfil
-            // 3.1. Comprobamos el nombre del perfil no exista
-            ApiSQLiteFAFA.ComprobarSiExisteNombreDePerfil(eNombreUsuario.Text);
-
-            // 3.2. Creamos el perfil
-            Perfil perfilNuevo = new Perfil(ususActualId, eNombreUsuario.Text,null ); // TODO: Configurar avatar a elegir ahora mismo null 
-
-            // 3.3. Guardamos el perfil
-            ApiSQLiteFAFA.InsertarPerfil(perfilNuevo);
-
-            // 4 Guardamos contraseña ocultada mediante un id que se hace a partir del id de usuario
-            ApiSQLiteFAFA.GuardarContrasenaOculta(ususActualId ,ePassword.Text);
-
-            #endregion
-
-            #region GUARDADO EN LA NUBE
-            //await ApiAivenFAFA.Pruebas();
-            #endregion
-
-            // 4. Mostramos un mensaje de estado al usuario 
-            lError.IsVisible = true;
 
 
         }

@@ -1,6 +1,8 @@
 
 
 using BGestionFAFA;
+using BModelosFAFA;
+using BModelosSQLFAFA;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
@@ -77,35 +79,65 @@ public partial class PageInicioSesion : ContentPage
     {
         bool errorEncontrado = false;
         int idUsuario = -1;
-        string passwordOculta;
+        string passwordParaValidar = ""; // Aquí guardaremos o la real (local) o el Hash (nube)        
         try
         {
             // 1. Validar campos vacíos antes de ir a la DB
             if (string.IsNullOrEmpty(eEmail.Text) || string.IsNullOrEmpty(ePassword.Text))
                 throw new Exception("Introduce todos los datos");
 
-            // 2. Comprobar que la cuenta exista y la contraseña sea correcto
-            // 2.1. Sacamos el id del usuario con ese correo para la sacar la contraseña oculta
-            idUsuario = ApiSQLiteFAFA.ExtraerIdUsuarioPorEmail(eEmail.Text);
-
-            // 2.2 Comprobamos que haya devuelto un id 
-            if (idUsuario == null)
+            // Si hay internet extraemos desde Aiven sino desde sqlite
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                throw new Exception("El correo electrónico no está registrado.");
+                // 1. Extraemos el HASH y el ID desde Aiven
+                Usuario datosNube = await ApiAivenFAFA.ExtraerDatosLoginPorEmail(eEmail.Text);
+
+                if (datosNube == null) throw new Exception("Correo no registrado en la nube");
+
+                idUsuario = datosNube.IdUsuario;
+                string hashEnAiven = datosNube.Password.ToLower();
+
+                // 2. Convertimos lo que el usuario escribió a HASH para comparar "peras con peras"
+                string hashDeMiEntrada = ApiAivenFAFA.GenerarHash(ePassword.Text).ToLower();
+
+                if (hashDeMiEntrada != hashEnAiven)
+                {
+                    throw new Exception("La contraseña no coincide");
+                }
+
+                // 3. Como acertó y hay internet, comprobamos que este en el SecureStorage
+                bool existaYa = await ApiSQLiteFAFA.ComprobarExisteEnSecureStorage(idUsuario, ePassword.Text);
+
+                // 4. Sino existe la guardamos, para que pueda iniciar cuando no tenga internet
+                if (!existaYa)
+                {
+                    ApiSQLiteFAFA.GuardarContrasenaOculta(idUsuario, ePassword.Text);
+                }
+            }
+            else
+            {
+                // 1. Buscamos el ID asociado al email en el móvil
+                idUsuario = ApiSQLiteFAFA.ExtraerIdUsuarioPorEmail(eEmail.Text);
+
+                if (idUsuario == -1)
+                    throw new Exception("Este usuario no existe en este dispositivo. Conéctate una vez a internet.");
+
+                // 2. Intentamos recuperar la "llave de repuesto"
+                passwordParaValidar = await ApiSQLiteFAFA.ObtenerPasswordOculta(idUsuario);
+
+                // 3. Verificamos que realmente tengamos algo guardado
+                if (string.IsNullOrEmpty(passwordParaValidar))
+                {
+                    throw new Exception("No hay datos de acceso local. Inicia sesión con internet primero.");
+                }
+
+                if (ePassword.Text != passwordParaValidar)
+                {
+                    throw new Exception("Contraseña incorrecta.");
+                }
             }
 
-            // 2.3. Una vez extraido obtenemos la contraseña real de ese usuario
-            passwordOculta =  await ApiSQLiteFAFA.ObtenerPasswordOculta(idUsuario);
 
-            // 2.4. Comprobamos que las contrasena coincidan
-            if(ePassword.Text != passwordOculta)
-            {
-                ePassword.Text = "";
-                throw new Exception("La contraseña no coincide");
-
-            }
-
-       
 
         }
         catch(Exception error)
@@ -114,6 +146,7 @@ public partial class PageInicioSesion : ContentPage
             errorEncontrado = true;
             lError.Text = error.Message;
             lError.TextColor = Colors.Red;
+            ePassword.Text = "";
         }
         finally
         {

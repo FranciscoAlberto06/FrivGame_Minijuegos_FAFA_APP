@@ -1,11 +1,9 @@
-﻿using BModelosSQLFAFA;
+﻿using BModelosFAFA;
+using BModelosSQLFAFA;
 using MySqlConnector;
 using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BGestionFAFA
 {
@@ -65,14 +63,13 @@ namespace BGestionFAFA
                 MySqlCommand cmd = new MySqlCommand("SELECT * FROM USUARIO", conexionNube);
                 using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
                 {
-                    using (SQLiteConnection local = new SQLiteConnection(rutaCompletaPersonal))
+                    using (SQLiteConnection conexionLocal = new SQLiteConnection(rutaCompletaPersonal))
                     {
                         while (await reader.ReadAsync())
                         {
                             int idNube = reader.GetInt32("id_usuario");
-                            if (local.Table<UsuarioSQL>().FirstOrDefault(x => x.IdUsuario == idNube) == null)
-                            {
-                                local.Insert(new UsuarioSQL
+                      
+                                conexionLocal.InsertOrReplace(new UsuarioSQL
                                 {
                                     IdUsuario = idNube,
                                     NombreUsuario = reader.GetString("username"),
@@ -80,7 +77,8 @@ namespace BGestionFAFA
                                     Password = reader.GetString("password_hash"),
                                     Sincronizada = true
                                 });
-                            }
+                            
+                           
                         }
                     }
                 }
@@ -100,9 +98,8 @@ namespace BGestionFAFA
                         while (await reader.ReadAsync())
                         {
                             string uidNube = reader.GetString("perfil_uid");
-                            if (local.Table<PerfilSQL>().FirstOrDefault(x => x.PerfilUid == uidNube) == null)
-                            {
-                                local.Insert(new PerfilSQL
+                    
+                                local.InsertOrReplace(new PerfilSQL
                                 {
                                     PerfilUid = uidNube,
                                     IdUsuario = reader.GetInt32("id_usuario"),
@@ -112,7 +109,7 @@ namespace BGestionFAFA
                                     NombreUsuario = reader.GetString("nombre_usuario"),
                                     Sincronizada = true
                                 });
-                            }
+                            
                         }
                     }
                 }
@@ -132,16 +129,15 @@ namespace BGestionFAFA
                         while (await reader.ReadAsync())
                         {
                             int idNube = reader.GetInt32("id_juego");
-                            if (local.Table<JuegoSQL>().FirstOrDefault(x => x.IdJuego == idNube) == null)
-                            {
-                                local.Insert(new JuegoSQL
+                         
+                                local.InsertOrReplace(new JuegoSQL
                                 {
                                     IdJuego = idNube,
                                     Nombre = reader.GetString("nombre"),
                                     ImagenURL = reader.GetString("imagen_url"),
                                     ColorHex = reader.GetString("color_hex")
                                 });
-                            }
+                            
                         }
                     }
                 }
@@ -161,9 +157,8 @@ namespace BGestionFAFA
                         while (await reader.ReadAsync())
                         {
                             int idNube = reader.GetInt32("id_logro");
-                            if (local.Table<LogroSQL>().FirstOrDefault(x => x.IdLogro == idNube) == null)
-                            {
-                                local.Insert(new LogroSQL
+                            
+                                local.InsertOrReplace(new LogroSQL
                                 {
                                     IdLogro = idNube,
                                     IdJuego = reader.GetInt32("id_juego"),
@@ -172,7 +167,7 @@ namespace BGestionFAFA
                                     XpPremio = reader.GetInt32("xp_premio"),
                                     Sincronizada = true
                                 });
-                            }
+                            
                         }
                     }
                 }
@@ -192,9 +187,8 @@ namespace BGestionFAFA
                         while (await reader.ReadAsync())
                         {
                             int idNube = reader.GetInt32("id_partida");
-                            if (local.Table<PartidaSQL>().FirstOrDefault(x => x.IdPartida == idNube) == null)
-                            {
-                                local.Insert(new PartidaSQL
+                            
+                                local.InsertOrReplace(new PartidaSQL
                                 {
                                     IdPartida = idNube,
                                     IdJuego = reader.GetInt32("id_juego"),
@@ -205,7 +199,7 @@ namespace BGestionFAFA
                                     FechaHora = reader.GetDateTime("fecha_hora"),
                                     Sincronizada = true
                                 });
-                            }
+                            
                         }
                     }
                 }
@@ -309,185 +303,278 @@ namespace BGestionFAFA
         #endregion
 
         #region METODOS DE SQLITE A AIVEN
-        public async static Task SubirDatosCompletosHaciaAiven()
+
+        public async static Task SincronizarHaciaAiven(string tipo)
         {
+
             try
             {
-                NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
-                if (accesoRed != NetworkAccess.Internet) return;
-
-                using (SQLiteConnection local = new SQLiteConnection(rutaCompletaPersonal))
+                // Si hay red continuamos, si no, no hacemos nada porque no hay conexión para subir datos
+                if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
                 {
-                    // 1. SUBIR USUARIOS NUEVOS O ACTUALIZADOS
-                    List<UsuarioSQL> usuariosPendientes = local.Table<UsuarioSQL>().Where(u => u.Sincronizada == false).ToList();
-                    foreach (UsuarioSQL user in usuariosPendientes)
+                    using (SQLiteConnection conexionLocal = new SQLiteConnection(rutaCompletaPersonal))
+                    using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
                     {
-                        bool exito = await InsertarOActualizarUsuarioNube(user);
-                        if (exito)
+                        await conexionNube.OpenAsync();
+
+                        switch (tipo)
                         {
-                            user.Sincronizada = true;
-                            local.Update(user);
+                            case "Usuario":
+                                await SubirUsuariosPendientes(conexionLocal, conexionNube);
+                                break;
+                            case "Perfil":
+                                await SubirPerfilesPendientes(conexionLocal, conexionNube);
+                                break;
+                            case "Partida":
+                                await SubirPartidasPendientes(conexionLocal, conexionNube);
+                                break;
+                            case "Logro":
+                                await SubirLogrosPendientes(conexionLocal, conexionNube);
+                                break;
+                            case "Todo":
+                                await SubirUsuariosPendientes(conexionLocal, conexionNube);
+                                await SubirPerfilesPendientes(conexionLocal, conexionNube);
+                                await SubirPartidasPendientes(conexionLocal, conexionNube);
+                                await SubirLogrosPendientes(conexionLocal, conexionNube);
+                                break;
                         }
                     }
 
-                    // 2. SUBIR PERFILES (Actualizaciones de Nivel, XP o Avatares)
-                    List<PerfilSQL> perfilesPendientes = local.Table<PerfilSQL>().Where(p => p.Sincronizada == false).ToList();
-                    foreach (PerfilSQL perfil in perfilesPendientes)
-                    {
-                        bool exito = await InsertarOActualizarPerfilNube(perfil);
-                        if (exito)
-                        {
-                            perfil.Sincronizada = true;
-                            local.Update(perfil);
-                        }
-                    }
-
-                    // 3. SUBIR PARTIDAS JUGADAS OFFLINE
-                    List<PartidaSQL> partidasPendientes = local.Table<PartidaSQL>().Where(p => p.Sincronizada == false).ToList();
-                    foreach (PartidaSQL partida in partidasPendientes)
-                    {
-                        bool exito = await InsertarPartidaNube(partida);
-                        if (exito)
-                        {
-                            partida.Sincronizada = true;
-                            local.Update(partida);
-                        }
-                    }
-
-                    // 4. SUBIR LOGROS DESBLOQUEADOS
-                    List<PerfilLogroSQL> logrosPendientes = local.Table<PerfilLogroSQL>().Where(l => l.Sincronizado == false).ToList();
-                    foreach (PerfilLogroSQL logro in logrosPendientes)
-                    {
-                        bool exito = await InsertarUsuarioLogroNube(logro);
-                        if (exito)
-                        {
-                            logro.Sincronizado = true;
-                            local.Update(logro);
-                        }
-                    }
-
-                    //// 5. SUBIR AMISTADES (Solicitudes o respuestas)
-                    //List<AmistadSQL> amistadesPendientes = local.Table<AmistadSQL>().Where(a => a.Sincronizada == false).ToList();
-                    //foreach (AmistadSQL amistad in amistadesPendientes)
-                    //{
-                    //    bool exito = await InsertarOActualizarAmistadNube(amistad);
-                    //    if (exito)
-                    //    {
-                    //        amistad.Sincronizada = true;
-                    //        local.Update(amistad);
-                    //    }
-                    //}
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERROR AL SUBIR A AIVEN: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Sincro Error: {ex.Message}");
             }
         }
 
 
-
-        private static async Task<bool> InsertarOActualizarUsuarioNube(UsuarioSQL user)
+        private static async Task SubirUsuariosPendientes(SQLiteConnection conexionLocal, MySqlConnection conexionNube)
         {
-            using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
+            List<UsuarioSQL> pendientes = conexionLocal.Table<UsuarioSQL>().Where(u => u.Sincronizada == false).ToList();
+            foreach (UsuarioSQL user in pendientes)
             {
-                await conexionNube.OpenAsync();
-                string query = "INSERT INTO USUARIO (id_usuario, username, email, password_hash) " +
-                               "VALUES (@id, @user, @email, @pass) " +
-                               "ON DUPLICATE KEY UPDATE username = @user, email = @email, password_hash = @pass";
+                // 1. Sacamos la password real del movil 
+                string passReal = await ApiSQLiteFAFA.ObtenerPasswordOculta(user.IdUsuario);
 
-                MySqlCommand cmd = new MySqlCommand(query, conexionNube);
-                cmd.Parameters.AddWithValue("@id", user.IdUsuario);
-                cmd.Parameters.AddWithValue("@user", user.NombreUsuario);
-                cmd.Parameters.AddWithValue("@email", user.Email);
-                cmd.Parameters.AddWithValue("@pass", user.Password);
 
-                return await cmd.ExecuteNonQueryAsync() > 0;
-            }
-        }
+                // 2. Generamos el HASH para que Aiven no vea la password real
+                string passParaNube = GenerarHash(passReal);
 
-        private static async Task<bool> InsertarOActualizarPerfilNube(PerfilSQL perfil)
-        {
-            using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
-            {
-                await conexionNube.OpenAsync();
-                string query = "INSERT INTO PERFIL (perfil_uid, id_usuario, nombre_usuario, nivel, xp_total, avatar_url) " +
-                               "VALUES (@uid, @idU, @nom, @lvl, @xp, @ava) " +
-                               "ON DUPLICATE KEY UPDATE nivel = @lvl, xp_total = @xp, avatar_url = @ava, nombre_usuario = @nom";
+                // 3. Insertamos en Aiven
+                string query = @"INSERT INTO USUARIO (username, email, password_hash) 
+                         VALUES (@user, @email, @pass) 
+                         ON DUPLICATE KEY UPDATE password_hash = @pass";
 
-                MySqlCommand cmd = new MySqlCommand(query, conexionNube);
-                cmd.Parameters.AddWithValue("@uid", perfil.PerfilUid);
-                cmd.Parameters.AddWithValue("@idU", perfil.IdUsuario);
-                cmd.Parameters.AddWithValue("@nom", perfil.NombreUsuario);
-                cmd.Parameters.AddWithValue("@lvl", perfil.Nivel);
-                cmd.Parameters.AddWithValue("@xp", perfil.XpTotal);
-                cmd.Parameters.AddWithValue("@ava", string.IsNullOrEmpty(perfil.AvatarUrl) ? "" : perfil.AvatarUrl);
-
-                return await cmd.ExecuteNonQueryAsync() > 0;
-            }
-        }
-
-        private static async Task<bool> InsertarPartidaNube(PartidaSQL partida)
-        {
-            using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
-            {
-                await conexionNube.OpenAsync();
-                string query = "INSERT INTO PARTIDA (id_juego, id_perfil, puntuacion, tiempo_segundos, victoria, fecha_hora) " +
-                               "VALUES (@idJ, @idP, @pts, @time, @vic, @fecha)";
-
-                MySqlCommand cmd = new MySqlCommand(query, conexionNube);
-                cmd.Parameters.AddWithValue("@idJ", partida.IdJuego);
-                cmd.Parameters.AddWithValue("@idP", partida.IdPerfil);
-                cmd.Parameters.AddWithValue("@pts", partida.Puntuacion);
-                cmd.Parameters.AddWithValue("@time", partida.TiempoSegundos);
-                cmd.Parameters.AddWithValue("@vic", partida.Victoria);
-                cmd.Parameters.AddWithValue("@fecha", partida.FechaHora);
-
-                return await cmd.ExecuteNonQueryAsync() > 0;
-            }
-        }
-
-        private static async Task<bool> InsertarUsuarioLogroNube(PerfilLogroSQL logro)
-        {
-            try
-            {
-                using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
+                using (MySqlCommand cmd = new MySqlCommand(query, conexionNube))
                 {
-                    await conexionNube.OpenAsync();
-                    string query = "INSERT INTO USUARIO_LOGRO (perfil_uid, id_logro, fecha_obtencion) " +
-                                   "VALUES (@idP, @idL, @fecha)";
+                    cmd.Parameters.AddWithValue("@user", user.NombreUsuario ?? "Usuario");
+                    cmd.Parameters.AddWithValue("@email", user.Email);
+                    cmd.Parameters.AddWithValue("@pass", passParaNube); // Mandamos el HASH
 
-                    MySqlCommand cmd = new MySqlCommand(query, conexionNube);
-                    cmd.Parameters.AddWithValue("@idP", logro.IdPerfil);
+                    // Si la inserción/actualización fue exitosa, marcamos como sincronizado
+                    if (await cmd.ExecuteNonQueryAsync() > 0)
+                    {
+                        user.Sincronizada = true;
+                        conexionLocal.Update(user);
+                    }
+                }
+            }
+        }
+
+        private static async Task SubirPerfilesPendientes(SQLiteConnection conexionLocal, MySqlConnection conexionNube)
+        {
+            List<PerfilSQL> pendientes = conexionLocal.Table<PerfilSQL>().Where(p => p.Sincronizada == false).ToList();
+            foreach (PerfilSQL perfil in pendientes)
+            {
+                string query = @"INSERT INTO PERFIL (perfil_uid, id_usuario, nombre_usuario, nivel, xp_total, avatar_url) 
+                         VALUES (@uid, @idU, @nom, @lvl, @xp, @ava) 
+                         ON DUPLICATE KEY UPDATE nivel = @lvl, xp_total = @xp, avatar_url = @ava, nombre_usuario = @nom";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conexionNube))
+                {
+                    cmd.Parameters.AddWithValue("@uid", perfil.PerfilUid);
+                    cmd.Parameters.AddWithValue("@idU", perfil.IdUsuario);
+                    cmd.Parameters.AddWithValue("@nom", perfil.NombreUsuario);
+                    cmd.Parameters.AddWithValue("@lvl", perfil.Nivel);
+                    cmd.Parameters.AddWithValue("@xp", perfil.XpTotal);
+                    cmd.Parameters.AddWithValue("@ava", perfil.AvatarUrl ?? "");
+
+                    if (await cmd.ExecuteNonQueryAsync() > 0)
+                    {
+                        perfil.Sincronizada = true;
+                        conexionLocal.Update(perfil);
+                    }
+                }
+            }
+        }
+
+        private static async Task SubirPartidasPendientes(SQLiteConnection conexionLocal, MySqlConnection conexionNube)
+        {
+            List<PartidaSQL> pendientes = conexionLocal.Table<PartidaSQL>().Where(p => p.Sincronizada == false).ToList();
+            foreach (PartidaSQL partida in pendientes)
+            {
+                // En partidas no solemos usar ON DUPLICATE KEY porque cada partida es nueva
+                string query = @"INSERT INTO PARTIDA (id_juego, id_perfil, puntuacion, tiempo_segundos, victoria, fecha_hora) 
+                         VALUES (@idJ, @idP, @pts, @time, @vic, @fecha)";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conexionNube))
+                {
+                    cmd.Parameters.AddWithValue("@idJ", partida.IdJuego);
+                    cmd.Parameters.AddWithValue("@idP", partida.IdPerfil);
+                    cmd.Parameters.AddWithValue("@pts", partida.Puntuacion);
+                    cmd.Parameters.AddWithValue("@time", partida.TiempoSegundos);
+                    cmd.Parameters.AddWithValue("@vic", partida.Victoria);
+                    cmd.Parameters.AddWithValue("@fecha", partida.FechaHora);
+
+                    if (await cmd.ExecuteNonQueryAsync() > 0)
+                    {
+                        partida.Sincronizada = true;
+                        conexionLocal.Update(partida);
+                    }
+                }
+            }
+        }
+
+        private static async Task SubirLogrosPendientes(SQLiteConnection conexionLocal, MySqlConnection conexionNube)
+        {
+            List<PerfilLogroSQL> pendientes = conexionLocal.Table<PerfilLogroSQL>().Where(l => l.Sincronizado == false).ToList();
+            foreach (PerfilLogroSQL logro in pendientes)
+            {
+                string query = @"INSERT INTO USUARIO_LOGRO (perfil_uid, id_logro, fecha_obtencion) 
+                         VALUES (@uid, @idL, @fecha)
+                         ON DUPLICATE KEY UPDATE fecha_obtencion = @fecha";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conexionNube))
+                {
+                    cmd.Parameters.AddWithValue("@uid", logro.IdPerfil);
                     cmd.Parameters.AddWithValue("@idL", logro.IdLogro);
                     cmd.Parameters.AddWithValue("@fecha", logro.FechaObtencion);
 
-                    return await cmd.ExecuteNonQueryAsync() > 0;
+                    if (await cmd.ExecuteNonQueryAsync() > 0)
+                    {
+                        logro.Sincronizado = true;
+                        conexionLocal.Update(logro);
+                    }
                 }
             }
-            catch (MySqlException ex) when (ex.Number == 1062)
+        }
+        #endregion
+
+        #region GESTION DE PASSWORD HASH
+        public static string GenerarHash(string passwordReal)
+        {
+            // 1. Creamos una instancia del algoritmo SHA256
+            using (SHA256 sha256Hash = SHA256.Create())
             {
-                // Error 1062 es "Duplicate Entry". Si ya existe en la nube, damos la tarea local por completada.
-                return true;
+                // 2. Convertimos la contraseña real en un array de bytes
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(passwordReal));
+
+                // 3. Convertimos esos bytes en una cadena Hexadecimal (el Hash)
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    // "x2" hace que cada byte sea un par de letras/números (hex)
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+
+                return builder.ToString(); // Esto devuelve algo como "a665a4592042..."
             }
         }
 
-        private static async Task<bool> InsertarOActualizarAmistadNube(AmistadSQL amistad)
+        public static async Task<Usuario> ExtraerDatosLoginPorEmail(string email)
         {
-            using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
+            Usuario usuarioEncontrado = null;
+
+            // Usamos la cadena de conexión de tu servidor Aiven
+            using (MySqlConnection conexion = new MySqlConnection(conexionString))
             {
-                await conexionNube.OpenAsync();
-                string query = "INSERT INTO AMISTAD (id_usuario_solicitante, id_usuario_receptor, estado, fecha_solicitud) " +
-                               "VALUES (@idSol, @idRec, @est, @fecha) " +
-                               "ON DUPLICATE KEY UPDATE estado = @est";
+                try
+                {
+                    await conexion.OpenAsync();
 
-                MySqlCommand cmd = new MySqlCommand(query, conexionNube);
-                cmd.Parameters.AddWithValue("@idSol", amistad.IdUsuarioSolicitante);
-                cmd.Parameters.AddWithValue("@idRec", amistad.IdUsuarioReceptor);
-                cmd.Parameters.AddWithValue("@est", amistad.Estado.ToString());
-                cmd.Parameters.AddWithValue("@fecha", amistad.FechaSolicitud);
+                    // Buscamos el ID y la Password (que está en HEX/Hash en la nube)
+                    string query = "SELECT id_usuario, username, email, password_hash FROM USUARIO WHERE email = @email LIMIT 1";
 
-                return await cmd.ExecuteNonQueryAsync() > 0;
+                    using (MySqlCommand cmd = new MySqlCommand(query, conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@email", email);
+
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                usuarioEncontrado = new Usuario
+                                {
+                                    IdUsuario = reader.GetInt32("id_usuario"),
+                                    NombreUsuario = reader.GetString("username"),
+                                    Email = reader.GetString("email"),
+                                    // IMPORTANTE: Aquí recogemos el HEX que guardamos al registrar
+                                    Password = reader.GetString("password_hash")
+                                };
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log de error para depuración
+                    System.Diagnostics.Debug.WriteLine("Error en Aiven: " + ex.Message);
+                    throw new Exception("Error al conectar con la base de datos en la nube.");
+                }
+            }
+
+            return usuarioEncontrado; // Si no existe, devolverá null
+        }
+        #endregion
+
+        #region METODOS DE INSERCCION A AIVEN
+        public static async Task<int> InsertarUsuarioEnNube(string email, string user, string pass)
+        {
+            using (MySqlConnection conn = new MySqlConnection(conexionString))
+            {
+                await conn.OpenAsync();
+                // Comprobamos si el email ya existe en Aiven antes de insertar
+                // (Esto evita el error de duplicados en la nube)
+
+                string sql = "INSERT INTO USUARIO (email, username, password_hash) VALUES (@e, @u, @p)";
+                using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@e", email);
+                    cmd.Parameters.AddWithValue("@u", user);
+                    cmd.Parameters.AddWithValue("@p", GenerarHash(pass)); // Idealmente el hash
+                    await cmd.ExecuteNonQueryAsync();
+
+                    return (int)cmd.LastInsertedId; // <--- ESTO DEVUELVE EL ID REAL
+                }
+            }
+        }
+
+        public static async Task InsertarPerfilDirectoEnNube(Perfil p)
+        {
+            using (MySqlConnection conexion = new MySqlConnection(conexionString))
+            {
+                await conexion.OpenAsync();
+
+                // IMPORTANTE: Asegúrate de que los nombres de las columnas 
+                // coincidan exactamente con tu tabla en Aiven
+                string query = @"INSERT INTO PERFIL (perfil_uid, id_usuario, nombre_usuario, nivel, xp_total, avatar_url) 
+                         VALUES (@uid, @idUsu, @nom, @niv, @xp, @ava)";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conexion))
+                {
+                    // Usamos los datos del objeto Perfil que ya viene con el ID de Aiven
+                    cmd.Parameters.AddWithValue("@uid", p.PerfilUid);
+                    cmd.Parameters.AddWithValue("@idUsu", p.IdUsuario);
+                    cmd.Parameters.AddWithValue("@nom", p.NombreUsuario);
+                    cmd.Parameters.AddWithValue("@niv", 1); // Nivel inicial
+                    cmd.Parameters.AddWithValue("@xp", 0);  // XP inicial
+
+                    // Manejo de nulos para el avatar
+                    cmd.Parameters.AddWithValue("@ava", string.IsNullOrEmpty(p.AvatarUrl) ? (object)DBNull.Value : p.AvatarUrl);
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
             }
         }
         #endregion
