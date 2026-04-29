@@ -520,8 +520,15 @@ public partial class AdivinarLaPalabra2 : ContentPage
             // Si hemos ganado la partida atualizamos la victoria de la partida
             if (juegoGanado)
             {
-                ApiSQLiteFAFA.ActualizarPartidaAVictoria(idPartidaActual); // Actualizamos la partida a victoria si se ha ganado
+                ApiSQLiteFAFA.ActualizarPartidaAVictoria(idPartidaActual); // Actualizamos la partida a victoria si se ha ganado en sqlite
             }
+
+            // Subimos a AIVEN la partida si tenemos conexion a internet
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await ApiAivenFAFA.SincronizarHaciaAiven("Partidas");
+            }
+
 
         }
         finally {
@@ -536,7 +543,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
         string signficado = await ApiWordleFAFA.ObtenerSignificado(PalabraSecreta);
 
-        DisplayAlert("RAE", signficado, "Cerrar");
+        await DisplayAlert("RAE", signficado, "Cerrar");
 
     }
 

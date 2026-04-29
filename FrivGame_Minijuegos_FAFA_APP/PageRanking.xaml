@@ -74,7 +74,7 @@
                             <Label Text="🏆" FontSize="22" VerticalOptions="Center" HorizontalOptions="Center"/>
 
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="15,0">
-                                <Label Text="{Binding IdPerfil, StringFormat='Jugador ID: {0}'}" 
+                                <Label Text="{Binding NombreUsuario, StringFormat='Jugador: {0}'}" 
                                        TextColor="White" 
                                        FontSize="17"
                                        FontAttributes="Bold"/>

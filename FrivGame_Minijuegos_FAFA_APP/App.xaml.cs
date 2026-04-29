@@ -13,22 +13,6 @@ namespace FrivGame_Minijuegos_FAFA_APP
         {
             return new Window(new AppShell());
         }
-        //protected async override void OnSleep()
-        //{
-        
-
-        //    base.OnSleep();
-
-        //    // Comprobamos el estado de la red
-        //    NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
-
-        //    // Si tenemos conexion a internet actualizamos datos nuevo que hubiera en la nube
-        //    if (accesoRed == NetworkAccess.Internet)
-        //    {
-
-        //        await ApiAivenFAFA.SubirDatosCompletosHaciaAiven();
-
-        //    }
-        //}
+  
     }
 }

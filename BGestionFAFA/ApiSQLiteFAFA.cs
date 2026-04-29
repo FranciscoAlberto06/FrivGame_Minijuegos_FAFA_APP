@@ -126,7 +126,6 @@ namespace BGestionFAFA
 
         #endregion
 
-
         #region METODOS DE INSERCIÓN
         public static void InsertarJuego(Juego juegoNormal)
         {
@@ -438,6 +437,22 @@ namespace BGestionFAFA
             };
 
             return perfilObtenido;
+        }
+
+        public static string ExtraerNombrePerfilPorIdPerfil(string idUsuIniciado)
+        {
+
+            string nombreUsu;
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+
+                nombreUsu = conexion.Table<PerfilSQL>().Where(p => p.PerfilUid == idUsuIniciado).FirstOrDefault()?.NombreUsuario;
+            }
+
+      
+
+            return nombreUsu;
         }
 
         public static List<Juego> ExtraerTodosLosJuegos()

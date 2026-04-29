@@ -205,7 +205,7 @@ public partial class JuegoTopos : ContentPage
     
 
 
-    private void FinalizarJuego()
+    private async void FinalizarJuego()
     {
         // 1. Detenemos todos los timers y el cronómetro
         cronometro.Stop();
@@ -225,12 +225,28 @@ public partial class JuegoTopos : ContentPage
             Puntuacion = int.Parse(lbPuntaje.Text.Replace("Puntos: ", "")),
             TiempoSegundos = (int)cronometro.Elapsed.TotalSeconds,
         };
+        #region REGISTRO DE PARTIDA
+        try
+        {
+            // Insertamos la partida en la base de datos sqlite
+            ApiSQLiteFAFA.InsertarPartida(partidaFinal);
 
-        // Insertamos la partida en la base de datos
-        ApiSQLiteFAFA.InsertarPartida(partidaFinal);
+            // Sincronizamos la partida con la nube si tenemos internet, si no se sincronizara cuando tenga conexion
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
+            }
+
+        }catch (Exception ex)
+        {
+            // Manejo de errores
+            await DisplayAlert("Error", "No se pudo guardar la partida: " + ex.Message, "Aceptar");
+        }
+
+        #endregion
 
         // 4. Mostramos una alerta con el puntaje final
-        DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
+        await DisplayAlert("¡Tiempo agotado!", $"Partida finalizada. {lbPuntaje.Text}", "Aceptar");
 
 
     }

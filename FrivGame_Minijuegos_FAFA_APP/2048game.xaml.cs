@@ -379,8 +379,16 @@ public partial class _2048game : ContentPage
                     Puntuacion = puntuacion,
                 };
 
-                // Insertamos la partida en la base de datos
+                #region GUARDADO DE PARTIDA EN BASE DE DATOS LOCAL Y NUBE
+                // Insertamos la partida en la base de datos local
                 ApiSQLiteFAFA.InsertarPartida(partidaFinal);
+
+                // Subimos a la nube lo que tengamos en sqlite como no sincronizado, incluyendo esta partida que acabamos de guardar
+                if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+                {
+                    await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
+                }
+                #endregion
                 await DisplayAlert("¡Has perdido!", "No hay mas movimientos posibles", "Cerrar");
                 tableroGrid.IsEnabled = false; // Deshabilitamos el tablero para que no se puedan hacer más movimientos
             }

@@ -95,10 +95,10 @@ public partial class PageInicioSesion : ContentPage
                 if (datosNube == null) throw new Exception("Correo no registrado en la nube");
 
                 idUsuario = datosNube.IdUsuario;
-                string hashEnAiven = datosNube.Password.ToLower();
+                string hashEnAiven = datosNube.Password;
 
-                // 2. Convertimos lo que el usuario escribió a HASH para comparar "peras con peras"
-                string hashDeMiEntrada = ApiAivenFAFA.GenerarHash(ePassword.Text).ToLower();
+                // 2. Convertimos lo que el usuario escribió a HASH para comparar 
+                string hashDeMiEntrada = ApiAivenFAFA.GenerarHash(ePassword.Text);
 
                 if (hashDeMiEntrada != hashEnAiven)
                 {

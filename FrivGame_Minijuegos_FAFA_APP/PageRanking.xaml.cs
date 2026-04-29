@@ -46,6 +46,8 @@ public partial class PageRanking : ContentPage
         // 2. Procesamos la lista para aplicar colores de "resaltado"
         foreach (Partida partida in listaRankings)
         {
+            partida.NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(partida.IdPerfil);
+
             if (partida.IdPerfil == uIdPerfilActual)
             {
                 // Si soy yo: Fondo rojo oscuro y borde carmesí
