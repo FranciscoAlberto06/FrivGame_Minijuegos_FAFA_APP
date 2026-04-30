@@ -34,8 +34,11 @@ public partial class PageInicioSesion : ContentPage
         {
             #region CARGAR DATOS DE LA NUBE
             await ApiAivenFAFA.CargarDatosNuevosDesdeAiven(FileSystem.AppDataDirectory);
+            await ApiAivenFAFA.SincronizarHaciaAiven("Todo");
             #endregion
         }
+
+
 
     }
 

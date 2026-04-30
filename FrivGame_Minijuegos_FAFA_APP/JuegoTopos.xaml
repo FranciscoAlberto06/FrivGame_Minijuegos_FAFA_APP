@@ -3,14 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FrivGame_Minijuegos_FAFA_APP.JuegoTopos"
              Title="JuegoTopos"
+             xmlns:view="clr-namespace:BViewsFAFA;assembly=BViewsFAFA"
              Shell.NavBarIsVisible="False"
              >
-    
     <Grid>
-
-        <Image 
-        Source="fondo_madera.png" 
-        Aspect="AspectFill" />
+        <Image Source="fondo_madera.png" Aspect="AspectFill" />
 
         <Grid RowDefinitions="Auto, Auto, *, Auto" Padding="20">
 
@@ -37,22 +34,23 @@
             </Grid>
 
             <HorizontalStackLayout Grid.Row="3" Spacing="20" HorizontalOptions="Center">
-                
-                    <Button x:Name="bStartStop" 
-                            Text="Iniciar"
-                            WidthRequest="130" 
-                            HeightRequest="50" 
-                            Clicked="StartStopClick"/>
-
-                    <Button x:Name="bReiniciar" 
-                            Text="Reiniciar"
-                            WidthRequest="130" 
-                            HeightRequest="50"
-                            BackgroundColor="DarkRed"
-                            TextColor="White"
-                            Clicked="ReiniciarClick"/>
-                
+                <Button x:Name="bStartStop" 
+                    Text="Iniciar"
+                    WidthRequest="130" 
+                    HeightRequest="50" 
+                    Clicked="StartStopClick"/>
+                <Button x:Name="bReiniciar" 
+                    Text="Reiniciar"
+                    WidthRequest="130" 
+                    HeightRequest="50"
+                    BackgroundColor="DarkRed"
+                    TextColor="White"
+                    Clicked="ReiniciarClick"/>
             </HorizontalStackLayout>
         </Grid>
+
+        <view:ModeloCartelLogro x:Name="cartelLogro" />
+        
+        
     </Grid>
 </ContentPage>

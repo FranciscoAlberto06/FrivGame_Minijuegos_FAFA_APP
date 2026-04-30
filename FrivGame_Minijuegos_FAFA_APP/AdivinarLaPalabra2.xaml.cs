@@ -526,7 +526,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
             // Subimos a AIVEN la partida si tenemos conexion a internet
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                await ApiAivenFAFA.SincronizarHaciaAiven("Partidas");
+                await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
             }
 
 

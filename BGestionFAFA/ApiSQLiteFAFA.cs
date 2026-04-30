@@ -48,8 +48,7 @@ namespace BGestionFAFA
             {
                 // Creamos las tablas necesarias si no estan creadas
                 CrearTablasNecesaria(conexion);
-                // Y hacemos las inserciones iniciales necesarias, como los juegos predefinidos y los logros predefinidos
-                InsercionesIniciales(conexion);
+
             }
 
 
@@ -71,58 +70,7 @@ namespace BGestionFAFA
 
         }
 
-        private async static Task InsercionesIniciales(SQLiteConnection conexion)
-        {
-            // 1. Conteo de juego
-            int conteoJuegos = conexion.Table<JuegoSQL>().Count();
-            int conteoLogros = conexion.Table<LogroSQL>().Count();
-
-            if (conteoJuegos == 0)
-            {
-                // 2. Definimos la lista con el modelo "Juego" (el que entiende tu método)
-                List<Juego> juegosIniciales = new List<Juego>
-                {
-                    new Juego { Nombre = "TOPOS", ImagenURL = "portada_topos.png", ColorHex = "#DC143C" },
-                    new Juego { Nombre = "WORDLE", ImagenURL = "portada_adivinalapalabra.png", ColorHex = "#00FA9A" },
-                    new Juego { Nombre = "PAREJAS", ImagenURL = "portada_buscarparejas.png", ColorHex = "#00BFFF" },
-                    new Juego { Nombre = "2048", ImagenURL = "portada_2048.png", ColorHex = "#FFFF00" }
-                };
-
-                // 3. Ahora sí, recorremos la lista de modelos "Juego"
-                foreach (Juego j in juegosIniciales)
-                {
-                    // 4. Se lo pasamos a tu método que ya se encarga de convertirlo a JuegoSQL e insertar
-                    InsertarJuego(j);
-                }
-            }
-
-            if(conteoLogros == 0)
-            {
-                List<LogroSQL> logrosIniciales = new List<LogroSQL>
-                {
-                    // LOGROS PARA TOPOS 
-                    new LogroSQL { IdJuego = 1, Nombre = "Un topo unico", CondicionDesbloqueo = "Golpea 1 topos dorado", XpPremio = 1500, Sincronizada = true },
-            
-                    // LOGROS PARA WORDLE 
-                    new LogroSQL { IdJuego = 2, Nombre = "Diccionario Humano", CondicionDesbloqueo = "Adivina una palabra a la primera", XpPremio = 200, Sincronizada = true },
-                    new LogroSQL { IdJuego = 2, Nombre = "Persistente", CondicionDesbloqueo = "Adivina 5 palabras seguidas", XpPremio = 100, Sincronizada = true },
-
-                    // LOGROS PARA PAREJAS 
-                    new LogroSQL { IdJuego = 3, Nombre = "Memoria de Elefante", CondicionDesbloqueo = "Completa el tablero sin fallos", XpPremio = 300, Sincronizada = true },
-                    new LogroSQL { IdJuego = 3, Nombre = "Principiante", CondicionDesbloqueo = "Encuentra tu primera pareja", XpPremio = 20, Sincronizada = true },
-
-                    // LOGROS PARA 2048
-                    new LogroSQL { IdJuego = 4, Nombre = "Matemático", CondicionDesbloqueo = "Llega a la ficha 1024", XpPremio = 250, Sincronizada = true },
-                    new LogroSQL { IdJuego = 4, Nombre = "¡El Rey de los Números!", CondicionDesbloqueo = "Llega a la ficha 2048", XpPremio = 500, Sincronizada = true }
-                };
-
-                // Insertamos directamente en la tabla de logros
-                foreach (LogroSQL logro in logrosIniciales)
-                {
-                    conexion.Insert(logro);
-                }
-            }
-        }
+    
 
         #endregion
 
@@ -527,12 +475,12 @@ namespace BGestionFAFA
                     // 1. Procesamos las partidas para calcular el balance de cada jugador
                     rankingMejoresMarcasJuego = todasLasPartidasDelJuego
                         .GroupBy(p => p.IdPerfil)
-                        .Select(grupo => new PartidaSQL // Creamos objetos Partida directamente
+                        .Select(grupo => new PartidaSQL
                         {
                             IdPerfil = grupo.Key,
-                            // Calculamos: (Número de True) - (Número de False)
-                            Puntuacion = grupo.Count(p => p.Victoria == true) - grupo.Count(p => p.Victoria == false),
-                            IdJuego = 2 // O el ID que corresponda a Wordle
+                            // Sumamos 1 por victoria y restamos 1 por derrota, mínimo 0
+                            Puntuacion = Math.Max(0, grupo.Count(p => p.Victoria == true) - grupo.Count(p => p.Victoria == false)),
+                            IdJuego = 2
                         })
                         .OrderByDescending(p => p.Puntuacion)
                         .ToList();
@@ -624,6 +572,26 @@ namespace BGestionFAFA
                     }
                 }
             }
+        }
+
+        public static Logro ExtraerLogroPorId(int idLogro)
+        {
+
+            LogroSQL logroSQL;
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                logroSQL = conexion.Table<LogroSQL>().Where(l => l.IdLogro == idLogro).FirstOrDefault();
+            }
+
+            Logro logro = new Logro()
+            {
+                Nombre = logroSQL.Nombre,
+                XpPremio = logroSQL.XpPremio,
+            };
+
+            return logro;
+
         }
 
 

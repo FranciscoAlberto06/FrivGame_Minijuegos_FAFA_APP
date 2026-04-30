@@ -70,6 +70,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\BGestionFAFA\BGestionFAFA.csproj" />
 	  <ProjectReference Include="..\BModelosFAFA\BModelosFAFA.csproj" />
+	  <ProjectReference Include="..\BViewsFAFA\BViewsFAFA.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

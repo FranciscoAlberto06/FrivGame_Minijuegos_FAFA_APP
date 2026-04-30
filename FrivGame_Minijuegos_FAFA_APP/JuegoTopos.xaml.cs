@@ -22,11 +22,14 @@ public partial class JuegoTopos : ContentPage
 
     string PerfilUidActual;
 
-    
+    private bool mensajeLogroActivo = false;
+
+
+
 
     #endregion
 
-    
+
     public JuegoTopos(string uIdPerfil)
     {
         InitializeComponent();
@@ -190,14 +193,15 @@ public partial class JuegoTopos : ContentPage
         timerCro.Interval = TimeSpan.FromMilliseconds(100); // Actualiza 10 veces por segundo
         timerCro.Tick += (s, e) =>
         {
-            // Esta línea hace que el tiempo "suba" visualmente
-            // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
-            lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
-            // Cuando llegemos a 30 s finalizamos
             if (cronometro.Elapsed.TotalSeconds >= 30)
             {
                 FinalizarJuego();
             }
+            // Esta línea hace que el tiempo "suba" visualmente
+            // Formato: mm (minutos) : ss (segundos) . fff (milesimas)
+            lbCronometro.Text = cronometro.Elapsed.ToString(@"mm\:ss\.fff");
+            // Cuando llegemos a 30 s finalizamos
+         
 
         };
     }
@@ -215,6 +219,15 @@ public partial class JuegoTopos : ContentPage
         // 2. Ocultamos el tablero para que no sigan clickeando
         TableroJuego.IsVisible = false;
         bStartStop.IsVisible = false; // Deshabilitamos Iniciar/Pausar hasta que reinicie
+
+        #region LOGRO PUNTUACION MAYOR A 450
+        // Si la puntuacion a sido mayor a 450 debloqueamos el logro correspondiente a dicho usuario
+        if (int.Parse(lbPuntaje.Text.Replace("Puntos: ", "")) >= 450)
+        {
+            await InsertarLogroUsuario(8);
+        }
+        #endregion
+
 
         // 3. Guardamos partida
         // 3.1. Preparamos los datos de la partida en nuestro modelo
@@ -268,7 +281,7 @@ public partial class JuegoTopos : ContentPage
     //    CommandManager.InvalidateRequerySuggested();
     //}
 
-    private void AlGolpearTopo(object? sender, EventArgs e)
+    private async void AlGolpearTopo(object? sender, EventArgs e)
     {
         // Sacamos la imagen pulsada mediant el sender
         Image boton = (Image)sender;
@@ -291,18 +304,14 @@ public partial class JuegoTopos : ContentPage
             boton.StyleId = EstadoTopo.GolpeadoDorado.ToString();
             nuevoPuntaje = puntosActuales + 20;
             #region LOGRO TOPO DORADOR
-            // Comprobamos si tiene el logro de golpear un topo dorado, si no lo tiene se lo damos
-            if (!ApiSQLiteFAFA.ComprobarSiTieneElLogro(PerfilUidActual, 1)) {
-                ApiSQLiteFAFA.InsertarPerfilLogro(PerfilUidActual, 1);
-  
-            }
+            // Si ha tocado el logro del topo dorado le insertamos pasandole el id del logro en especifico de este caso
+            await InsertarLogroUsuario(1);
             #endregion
         }
         else if (puntosActuales != 0) // Para que no sea negativo no se pierde punto estando en 0 
         {
             // Si fallamos nos resta puntos
-            
-                nuevoPuntaje = puntosActuales - 5;
+            nuevoPuntaje = puntosActuales - 5;
             
         }
 
@@ -310,6 +319,8 @@ public partial class JuegoTopos : ContentPage
         lbPuntaje.Text = "Puntos: " + nuevoPuntaje.ToString();
 
     }
+
+
     #endregion
 
     #region CONTROLADOR DEL CURSO DEL JUEGO  (INICIAR, PAUSAR, REINICIAR)
@@ -356,6 +367,32 @@ public partial class JuegoTopos : ContentPage
             topo.StyleId = EstadoTopo.Abajo.ToString();
         }
     }
+    #endregion
+
+    #region METODOS LOGROS
+
+    private async Task InsertarLogroUsuario(int idLogro)
+    {
+        // Comprobamos antes de nada si el usuario ya tiene el logro
+        if (!ApiSQLiteFAFA.ComprobarSiTieneElLogro(PerfilUidActual, idLogro))
+        {
+            // Sino lo tiene lo insertamos
+            ApiSQLiteFAFA.InsertarPerfilLogro(PerfilUidActual, idLogro);
+
+            // Y si tiiene internet lo subimos a la nube el logro que ha debloqueado
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                await ApiAivenFAFA.SincronizarHaciaAiven("Logro");
+            }
+
+            // Mostramos el cartel del logro desbloqueado
+            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idLogro);
+            _ = cartelLogro.MostrarLogro(logro.Nombre, logro.XpPremio);
+
+        }
+
+    }
+
     #endregion
 
 

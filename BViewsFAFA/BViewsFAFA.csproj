@@ -23,4 +23,16 @@
 		<PackageReference Include="MySqlConnector" Version="2.5.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="ViewCartelLogro.xaml.cs">
+	    <DependentUpon>ViewCartelLogro.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="ViewCartelLogro.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
+
 </Project>

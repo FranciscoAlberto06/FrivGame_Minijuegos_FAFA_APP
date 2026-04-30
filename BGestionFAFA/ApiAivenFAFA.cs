@@ -174,7 +174,7 @@ namespace BGestionFAFA
             }
         }
 
-        private static async Task CargarPartidasDesdeNube()
+        public static async Task CargarPartidasDesdeNube()
         {
             using (MySqlConnection conexionNube = new MySqlConnection(conexionString))
             {
@@ -444,6 +444,7 @@ namespace BGestionFAFA
                 string query = @"INSERT INTO USUARIO_LOGRO (perfil_uid, id_logro, fecha_obtencion) 
                          VALUES (@uid, @idL, @fecha)
                          ON DUPLICATE KEY UPDATE fecha_obtencion = @fecha";
+                
 
                 using (MySqlCommand cmd = new MySqlCommand(query, conexionNube))
                 {

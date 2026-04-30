@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BViewsFAFA.ModeloCartelLogro">
+    <Border x:Name="bLogro"
+            IsVisible="False"
+            VerticalOptions="Start"
+            HorizontalOptions="End"
+            Margin="0,50,16,0"
+            Padding="12,10"
+            BackgroundColor="#CC1E1E1E"
+            Stroke="Gold"
+            StrokeThickness="1.5"
+            Opacity="0"
+            WidthRequest="220">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="12"/>
+        </Border.StrokeShape>
+
+        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *">
+
+            <BoxView x:Name="barraProgreso"
+                     Grid.Row="0" Grid.ColumnSpan="2"
+                     HeightRequest="2"
+                     BackgroundColor="Gold"
+                     HorizontalOptions="Fill"
+                     AnchorX="0"
+                     Margin="0,0,0,8"/>
+
+            <Label Grid.Row="1" Grid.Column="0"
+                   Text="🏆" FontSize="22"
+                   VerticalOptions="Center"
+                   Margin="0,0,10,0"/>
+
+            <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
+                <Label Text="¡LOGRO DESBLOQUEADO!"
+                       TextColor="Gold" FontSize="10"
+                       FontAttributes="Bold" CharacterSpacing="1"/>
+                <Label x:Name="lblNombreLogro"
+                       TextColor="White" FontSize="14"
+                       FontAttributes="Bold"/>
+                <Label x:Name="lblXpLogro"
+                       TextColor="#AAAAAA" FontSize="11"/>
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

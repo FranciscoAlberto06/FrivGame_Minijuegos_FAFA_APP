@@ -38,8 +38,13 @@ public partial class PageRanking : ContentPage
         ActualizarRanking(idJuegoSeleccionado);
     }
 
-    private void ActualizarRanking(int idJuego)
+    private async void ActualizarRanking(int idJuego)
     {
+        // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos más recientes
+        if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+        {
+            await ApiAivenFAFA.CargarPartidasDesdeNube();
+        }
         // 1. Extraemos las mejores marcas usando tu método de la API
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 

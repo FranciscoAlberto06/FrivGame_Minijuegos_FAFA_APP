@@ -159,30 +159,33 @@ namespace BGestionFAFA
                                         .GetProperty("meanings")[0]
                                         .GetProperty("senses");
 
-
-                            if (senseObtenidos.GetArrayLength() >= 3)
-                            {
-                                resultado = $"Significados de {palabra.ToUpper()}:";
-                                for (int i = 0; i < 3; i++)
+                            // Comprobamos que no sea nullo el valor devuelto
+                            if (senseObtenidos.ValueKind != JsonValueKind.Null)
+                            { 
+                                if (senseObtenidos.GetArrayLength() >= 3)
                                 {
-                                    if (senseObtenidos[i].TryGetProperty("description", out JsonElement definicion))
+                                    resultado = $"Significados de {palabra.ToUpper()}:";
+                                    for (int i = 0; i < 3; i++)
                                     {
-                                        string definicionTexto = definicion.GetString();
-                                        if (!string.IsNullOrEmpty(definicionTexto))
+                                        if (senseObtenidos[i].TryGetProperty("description", out JsonElement definicion))
                                         {
-                                            resultado += $"\n{i + 1}. {definicionTexto}";
+                                            string definicionTexto = definicion.GetString();
+                                            if (!string.IsNullOrEmpty(definicionTexto))
+                                            {
+                                                resultado += $"\n{i + 1}. {definicionTexto}";
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            else if (senseObtenidos.GetArrayLength() > 0)
-                            {
-                                // Si hay al menos un significado, lo mostramos
-                                string descripcion = senseObtenidos[0].GetProperty("description").GetString();
-
-                                if (!string.IsNullOrEmpty(descripcion))
+                                else if (senseObtenidos.GetArrayLength() > 0)
                                 {
-                                    resultado = $"{palabra.ToUpper()}: " + descripcion;
+                                    // Si hay al menos un significado, lo mostramos
+                                    string descripcion = senseObtenidos[0].GetProperty("description").GetString();
+
+                                    if (!string.IsNullOrEmpty(descripcion))
+                                    {
+                                        resultado = $"{palabra.ToUpper()}: " + descripcion;
+                                    }
                                 }
                             }
                         }
