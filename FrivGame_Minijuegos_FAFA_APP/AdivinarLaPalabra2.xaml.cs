@@ -1,6 +1,7 @@
 ﻿
 using BGestionFAFA;
 using BModelosFAFA;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -527,6 +528,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
                 await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
+
             }
 
 

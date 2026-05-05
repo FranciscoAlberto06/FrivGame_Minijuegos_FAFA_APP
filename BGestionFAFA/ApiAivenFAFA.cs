@@ -182,13 +182,18 @@ namespace BGestionFAFA
                 MySqlCommand cmd = new MySqlCommand("SELECT * FROM PARTIDA", conexionNube);
                 using (MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync())
                 {
-                    using (SQLiteConnection local = new SQLiteConnection(rutaCompletaPersonal))
+                    using (SQLiteConnection conexionLocal = new SQLiteConnection(rutaCompletaPersonal))
                     {
                         while (await reader.ReadAsync())
                         {
                             int idNube = reader.GetInt32("id_partida");
-                            
-                                local.InsertOrReplace(new PartidaSQL
+
+                            bool yaExiste = conexionLocal.Table<PartidaSQL>()
+                                       .Any(p => p.IdPartida == idNube);
+
+                            if (!yaExiste)
+                            {
+                                conexionLocal.Insert(new PartidaSQL
                                 {
                                     IdPartida = idNube,
                                     IdJuego = reader.GetInt32("id_juego"),
@@ -199,6 +204,7 @@ namespace BGestionFAFA
                                     FechaHora = reader.GetDateTime("fecha_hora"),
                                     Sincronizada = true
                                 });
+                            }
                             
                         }
                     }
@@ -429,8 +435,14 @@ namespace BGestionFAFA
 
                     if (await cmd.ExecuteNonQueryAsync() > 0)
                     {
+                        int idAntiguo = partida.IdPartida;
+                        partida.IdPartida = (int)cmd.LastInsertedId;
                         partida.Sincronizada = true;
-                        conexionLocal.Update(partida);
+
+                        // Delete + Insert porque el IdPartida es PrimaryKey y no se puede Update
+                        // Borramos el viejo y insertamos el nuevo con el id de aiven
+                        conexionLocal.Delete<PartidaSQL>(idAntiguo);
+                        conexionLocal.Insert(partida);
                     }
                 }
             }

@@ -159,6 +159,8 @@ namespace BGestionFAFA
             {
                 partidaSQL = new PartidaSQL
                 {
+                    // Le damo un id negativo para diferenciarlo de las partidas que ya se han sincronizados y asi evitar conflicctos con los id de aiven
+                    IdPartida = ObtenerSiguienteIdNegativo(conexion),
                     IdJuego = partida.IdJuego,
                     IdPerfil = partida.IdPerfil,
                     Puntuacion = partida.Puntuacion,
@@ -177,6 +179,7 @@ namespace BGestionFAFA
             {
                 PartidaSQL partidaSQL = new PartidaSQL
                 {
+                    IdPartida = ObtenerSiguienteIdNegativo(conexion),
                     IdJuego = partida.IdJuego,
                     IdPerfil = partida.IdPerfil,
                     Puntuacion = partida.Puntuacion,
@@ -345,6 +348,7 @@ namespace BGestionFAFA
         #endregion
 
         #region METODOS DE EXTRACCION
+
 
         public static int ExtraerIdUsuarioPorEmail(string email)
         {
@@ -596,6 +600,27 @@ namespace BGestionFAFA
 
 
         #endregion
+
+        private static int ObtenerSiguienteIdNegativo(SQLiteConnection conexion)
+        {
+          
+                // Sacamos la partidas con el id mas bajo
+                PartidaSQL minima = conexion.Table<PartidaSQL>()
+                                            .OrderBy(p => p.IdPartida)
+                                            .FirstOrDefault();
+
+                // Si no hay partidas, empezamos por -1, sino seguimos restando 1 al id mas bajo encontrado
+                int idSiguienteNegativo = -1;
+
+                if (minima != null && minima.IdPartida <= 0)
+                {
+                    // Si ya hay partidas con id negativos, seguimos restando 1 al id mas bajo encontrado
+                    idSiguienteNegativo = minima.IdPartida - 1;
+                }
+
+                return idSiguienteNegativo;
+            
+        }
 
     }
 }

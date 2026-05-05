@@ -1,6 +1,7 @@
 
 using BGestionFAFA;
 using BModelosFAFA;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Diagnostics;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
@@ -250,7 +251,8 @@ public partial class JuegoTopos : ContentPage
                 await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
             }
 
-        }catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             // Manejo de errores
             await DisplayAlert("Error", "No se pudo guardar la partida: " + ex.Message, "Aceptar");

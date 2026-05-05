@@ -10,7 +10,7 @@ namespace BModelosSQLFAFA
     [Table("Partida")]
     public class PartidaSQL
     {
-        [PrimaryKey, AutoIncrement]
+        [PrimaryKey]
         public int IdPartida { get; set; } // Identificador único para evitar choques en el servidor
 
         public int IdJuego { get; set; }

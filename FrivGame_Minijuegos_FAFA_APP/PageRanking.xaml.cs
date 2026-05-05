@@ -1,5 +1,6 @@
 using BGestionFAFA;
 using BModelosFAFA;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
@@ -15,6 +16,7 @@ public partial class PageRanking : ContentPage
         CargarSelectorJuegos();
     }
 
+  
     private void CargarSelectorJuegos()
     {
         // 1. Sacamos de la bd los juegos disponibles 

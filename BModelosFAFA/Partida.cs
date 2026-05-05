@@ -9,6 +9,7 @@ namespace BModelosFAFA
 {
     public class Partida
     {
+
         public string IdPerfil { get; set; }
         public string NombreUsuario { get; set; }
 
