@@ -10,8 +10,8 @@ namespace BModelosFAFA
     {
         public int IdLogro { get; set; }
         public int IdJuego { get; set; }
-        public string Nombre { get; set; }
-        public string CondicionDesbloqueo { get; set; }
+        public string? Nombre { get; set; }
+        public string? CondicionDesbloqueo { get; set; }
         public int XpPremio { get; set; }
     }
 }

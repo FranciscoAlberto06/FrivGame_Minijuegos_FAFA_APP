@@ -33,8 +33,8 @@ public partial class PageInicioSesion : ContentPage
         if (accesoRed == NetworkAccess.Internet)
         {
             #region CARGAR DATOS DE LA NUBE
-            await ApiAivenFAFA.CargarDatosNuevosDesdeAiven(FileSystem.AppDataDirectory);
-            await ApiAivenFAFA.SincronizarHaciaAiven("Todo");
+            await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
+            await ApiRestFAFA.SincronizarHaciaApi("Todo");
             #endregion
         }
 
@@ -93,7 +93,7 @@ public partial class PageInicioSesion : ContentPage
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
                 // 1. Extraemos el HASH y el ID desde Aiven
-                Usuario datosNube = await ApiAivenFAFA.ExtraerDatosLoginPorEmail(eEmail.Text);
+                Usuario datosNube = await ApiRestFAFA.ExtraerDatosLoginPorEmail(eEmail.Text);
 
                 if (datosNube == null) throw new Exception("Correo no registrado en la nube");
 
@@ -101,7 +101,7 @@ public partial class PageInicioSesion : ContentPage
                 string hashEnAiven = datosNube.Password;
 
                 // 2. Convertimos lo que el usuario escribió a HASH para comparar 
-                string hashDeMiEntrada = ApiAivenFAFA.GenerarHash(ePassword.Text);
+                string hashDeMiEntrada = ApiRestFAFA.GenerarHash(ePassword.Text);
 
                 if (hashDeMiEntrada != hashEnAiven)
                 {

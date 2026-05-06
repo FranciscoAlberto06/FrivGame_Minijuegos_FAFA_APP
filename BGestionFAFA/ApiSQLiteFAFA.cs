@@ -601,6 +601,158 @@ namespace BGestionFAFA
 
         #endregion
 
+        #region METODOS PARA SINCRONIZACION CON API REST
+
+        public static List<Partida> ExtraerPartidasPendientes()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<PartidaSQL>()
+                               .Where(p => p.Sincronizada == false)
+                               .ToList()
+                               .Select(p => new Partida
+                               {
+                                   IdJuego = p.IdJuego,
+                                   IdPerfil = p.IdPerfil,
+                                   Puntuacion = p.Puntuacion,
+                                   TiempoSegundos = p.TiempoSegundos,
+                                   Victoria = p.Victoria,
+                               }).ToList();
+            }
+        }
+
+        public static void ActualizarIdPartidaSincronizada(Partida partida, int idReal)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                PartidaSQL antigua = conexion.Table<PartidaSQL>()
+                                             .FirstOrDefault(p => p.IdPerfil == partida.IdPerfil
+                                                               && p.Sincronizada == false);
+                if (antigua != null)
+                {
+                    int idAntiguo = antigua.IdPartida;
+                    antigua.IdPartida = idReal;
+                    antigua.Sincronizada = true;
+                    conexion.Delete<PartidaSQL>(idAntiguo);
+                    conexion.Insert(antigua);
+                }
+            }
+        }
+
+        public static List<Perfil> ExtraerPerfilesPendientes()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<PerfilSQL>()
+                               .Where(p => p.Sincronizada == false)
+                               .ToList()
+                               .Select(p => new Perfil
+                               {
+                                   PerfilUid = p.PerfilUid,
+                                   IdUsuario = p.IdUsuario,
+                                   NombreUsuario = p.NombreUsuario,
+                                   Nivel = p.Nivel,
+                                   XpTotal = p.XpTotal,
+                                   AvatarUrl = p.AvatarUrl
+                               }).ToList();
+            }
+        }
+
+        public static List<PerfilLogroSQL> ExtraerLogrosPendientes()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<PerfilLogroSQL>()
+                               .Where(l => l.Sincronizado == false)
+                               .ToList()
+                               .Select(l => new PerfilLogroSQL
+                               {
+                                   IdPerfil = l.IdPerfil,
+                                   IdLogro = l.IdLogro,
+                                   FechaObtencion = l.FechaObtencion
+                               }).ToList();
+            }
+        }
+
+        public static void GuardarPerfilesEnLocal(List<Perfil> perfiles)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (Perfil perfil in perfiles)
+                {
+                    conexion.InsertOrReplace(new PerfilSQL
+                    {
+                        PerfilUid = perfil.PerfilUid,
+                        IdUsuario = perfil.IdUsuario,
+                        NombreUsuario = perfil.NombreUsuario,
+                        Nivel = perfil.Nivel,
+                        XpTotal = perfil.XpTotal,
+                        AvatarUrl = perfil.AvatarUrl,
+                        Sincronizada = true
+                    });
+                }
+            }
+        }
+        public static void GuardarPartidasEnLocal(List<PartidaSQL> partidas)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (PartidaSQL partida in partidas)
+                {
+                    bool yaExiste = conexion.Table<PartidaSQL>()
+                                            .Any(p => p.IdPartida == partida.IdPartida);
+                    if (!yaExiste)
+                    {
+                        conexion.Insert(partida);
+                    }
+                }
+            }
+        }
+
+        public static void GuardarLogrosEnLocal(List<Logro> logros)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (Logro logro in logros)
+                {
+                    conexion.InsertOrReplace(new LogroSQL
+                    {
+                        IdLogro = logro.IdLogro,
+                        IdJuego = logro.IdJuego,
+                        Nombre = logro.Nombre,
+                        CondicionDesbloqueo = logro.CondicionDesbloqueo,
+                        XpPremio = logro.XpPremio,
+                        Sincronizada = true
+                    });
+                }
+            }
+        }
+
+        public static void GuardarUsuarioLogrosEnLocal(List<PerfilLogroSQL> logros)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (PerfilLogroSQL logro in logros)
+                {
+                    bool yaExiste = conexion.Table<PerfilLogroSQL>()
+                                            .Any(l => l.Id == logro.Id);
+                    if (!yaExiste)
+                    {
+                        conexion.Insert(new PerfilLogroSQL
+                        {
+                            Id = logro.Id,
+                            IdPerfil = logro.IdPerfil,
+                            IdLogro = logro.IdLogro,
+                            FechaObtencion = logro.FechaObtencion,
+                            Sincronizado = true
+                        });
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         private static int ObtenerSiguienteIdNegativo(SQLiteConnection conexion)
         {
           

@@ -248,7 +248,7 @@ public partial class JuegoTopos : ContentPage
             // Sincronizamos la partida con la nube si tenemos internet, si no se sincronizara cuando tenga conexion
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
+                await ApiRestFAFA.SincronizarHaciaApi("Partida");
             }
 
         }
@@ -384,7 +384,7 @@ public partial class JuegoTopos : ContentPage
             // Y si tiiene internet lo subimos a la nube el logro que ha debloqueado
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
-                await ApiAivenFAFA.SincronizarHaciaAiven("Logro");
+                await ApiRestFAFA.SincronizarHaciaApi("Logro");
             }
 
             // Mostramos el cartel del logro desbloqueado

@@ -386,7 +386,7 @@ public partial class _2048game : ContentPage
                 // Subimos a la nube lo que tengamos en sqlite como no sincronizado, incluyendo esta partida que acabamos de guardar
                 if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
                 {
-                    await ApiAivenFAFA.SincronizarHaciaAiven("Partida");
+                    await ApiRestFAFA.SincronizarHaciaApi("Partida");
                 }
                 #endregion
                 await DisplayAlert("¡Has perdido!", "No hay mas movimientos posibles", "Cerrar");

@@ -1,13 +1,16 @@
 using BGestionFAFA;
 using BModelosFAFA;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class PageRanking : ContentPage
 {
 	string uIdPerfilActual;
-    List<Juego> listaJuegos; // Clase sencilla para manejar el ID y Nombre del juego
+    List<Juego> listaJuegos; // para manejar el ID y Nombre del juego
+    HubConnection _conexionHub;
+
 
     public PageRanking(string uIdPerfil)
 	{
@@ -16,7 +19,60 @@ public partial class PageRanking : ContentPage
         CargarSelectorJuegos();
     }
 
-  
+
+    #region CONFIGURACION DE HUB PARA SINCRONIZACION EN TIEMPO REAL
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        #if ANDROID
+                string urlHub = "http://192.168.1.X:5088/rankingHub";
+        #else
+            string urlHub = "https://localhost:7087/rankingHub";
+        #endif
+
+        // Conectamos al hub de SignalR
+        _conexionHub = new HubConnectionBuilder()
+            .WithUrl(urlHub)
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Cuando la API avise de ranking actualizado
+        _conexionHub.On<int>("RankingActualizado", (idJuego) =>
+        {
+            // Revisamos que el juego seleccionado sea el que hay que actualizar
+            int indice = pickerJuegos.SelectedIndex;
+            if (indice != -1 && listaJuegos[indice].IdJuego == idJuego)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ActualizarRanking(idJuego);
+                });
+            }
+
+        });
+
+
+        try
+        {
+            
+            await _conexionHub.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error SignalR: {ex.Message}");
+        }
+    }
+
+    protected override async void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        if (_conexionHub != null)
+            await _conexionHub.StopAsync();
+    }
+    #endregion
+
     private void CargarSelectorJuegos()
     {
         // 1. Sacamos de la bd los juegos disponibles 
@@ -45,7 +101,7 @@ public partial class PageRanking : ContentPage
         // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos más recientes
         if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
         {
-            await ApiAivenFAFA.CargarPartidasDesdeNube();
+            await ApiRestFAFA.CargarPartidasDesdeNube();
         }
         // 1. Extraemos las mejores marcas usando tu método de la API
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);

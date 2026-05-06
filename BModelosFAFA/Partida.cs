@@ -10,15 +10,16 @@ namespace BModelosFAFA
     public class Partida
     {
 
-        public string IdPerfil { get; set; }
-        public string NombreUsuario { get; set; }
+        public string? IdPerfil { get; set; }
+        public string? NombreUsuario { get; set; }
 
         public int IdJuego { get; set; }
         public int Puntuacion { get; set; }
         public int TiempoSegundos { get; set; }
         public bool Victoria { get; set; }
 
-        public string ColorFondoRanking { get; set; }
+
+        public string? ColorFondoRanking { get; set; }
 
     }
 }

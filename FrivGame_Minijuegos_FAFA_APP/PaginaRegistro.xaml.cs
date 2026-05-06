@@ -28,7 +28,7 @@ public partial class PaginaRegistro : ContentPage
 
             // 3. GUARDADO EN LA NUBE (Aiven asigna el ID Real)
             // Insertamos el usuario y recuperamos el ID que MySQL generó automáticamente
-            int idRealAiven = await ApiAivenFAFA.InsertarUsuarioEnNube(eEmail.Text, eNombreUsuario.Text, ePassword.Text);
+            int idRealAiven = await ApiRestFAFA.InsertarUsuarioEnNube(eEmail.Text, eNombreUsuario.Text, ePassword.Text);
 
             if (idRealAiven > 0)
             {
@@ -37,10 +37,10 @@ public partial class PaginaRegistro : ContentPage
                 string nuevoUid = Guid.NewGuid().ToString();
                 Perfil perfilParaNube = new Perfil(idRealAiven, eNombreUsuario.Text, null) { PerfilUid = nuevoUid };
 
-                await ApiAivenFAFA.InsertarPerfilDirectoEnNube(perfilParaNube);
+                await ApiRestFAFA.InsertarPerfilDirectoEnNube(perfilParaNube);
 
                 // 5. SINCRONIZACIÓN HACIA DE(SQLite copia a Aiven)
-                await ApiAivenFAFA.CargarDatosNuevosDesdeAiven(FileSystem.AppDataDirectory);
+                await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
 
                 // 6. GUARDAR CONTRASEÑA SEGURA (SecureStorage local)
                 ApiSQLiteFAFA.GuardarContrasenaOculta(idRealAiven, ePassword.Text);

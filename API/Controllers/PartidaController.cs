@@ -1,5 +1,6 @@
 ﻿using API.Hubs;
 using BModelosFAFA;
+using BModelosSQLFAFA;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MySqlConnector;
@@ -64,11 +65,12 @@ namespace API.Controllers
             cmd.Parameters.AddWithValue("@pts", partida.Puntuacion);
             cmd.Parameters.AddWithValue("@time", partida.TiempoSegundos);
             cmd.Parameters.AddWithValue("@vic", partida.Victoria);
+            cmd.Parameters.AddWithValue("@fecha", DateTime.Now); 
 
             await cmd.ExecuteNonQueryAsync();
             int idNuevo = (int)cmd.LastInsertedId;
 
-            // ✅ Notificamos a todos los dispositivos conectados
+            // Notificamos a todos los dispositivos conectados
             await _hubContext.Clients.All.SendAsync("RankingActualizado", partida.IdJuego);
 
             return Ok(idNuevo);
