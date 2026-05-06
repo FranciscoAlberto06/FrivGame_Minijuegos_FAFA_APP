@@ -751,6 +751,23 @@ namespace BGestionFAFA
             }
         }
 
+        public static void GuardarJuegosEnLocal(List<Juego> juegos)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (Juego juego in juegos)
+                {
+                    conexion.InsertOrReplace(new JuegoSQL
+                    {
+                        IdJuego = juego.IdJuego,
+                        Nombre = juego.Nombre,
+                        ImagenURL = juego.ImagenURL,
+                        ColorHex = juego.ColorHex
+                    });
+                }
+            }
+        }
+
         #endregion
 
         private static int ObtenerSiguienteIdNegativo(SQLiteConnection conexion)
@@ -773,6 +790,8 @@ namespace BGestionFAFA
                 return idSiguienteNegativo;
             
         }
+
+
 
     }
 }

@@ -14,11 +14,8 @@ namespace BGestionFAFA
 {
     public class ApiRestFAFA
     {
-        #if ANDROID
-            private static string _urlBase = "http://192.168.1.X:5088/api";
-        #else
-            private static string _urlBase = "https://localhost:7087/api";
-        #endif
+
+        private static string _urlBase = "https://localhost:7087/api";
         private static HttpClient _http = new HttpClient();
 
         #region USUARIO
@@ -189,6 +186,26 @@ namespace BGestionFAFA
         }
         #endregion
 
+        #region JUEGO
+        public static async Task<List<Juego>> CargarJuegosDesdeNube()
+        {
+            List<Juego> juegos;
+
+            HttpResponseMessage response = await _http.GetAsync($"{_urlBase}/juego/todos");
+
+            if (response.IsSuccessStatusCode)
+            {
+                juegos = await response.Content.ReadFromJsonAsync<List<Juego>>();
+            }
+            else
+            {
+                juegos = new List<Juego>();
+            }
+
+            return juegos;
+        }
+        #endregion
+
         #region SINCRONIZACION COMPLETA
         public static async Task SincronizarHaciaApi(string tipo)
         {
@@ -245,12 +262,16 @@ namespace BGestionFAFA
                     List<PartidaSQL> partidas = await CargarPartidasDesdeNube();
                     List<Logro> logros = await CargarLogrosDesdeNube();
                     List<PerfilLogroSQL> usuarioLogros = await CargarUsuarioLogrosDesdeNube();
+                    List<Juego> juegos = await CargarJuegosDesdeNube();
+
 
                     // Guardamos en SQLite local
                     ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
                     ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
                     ApiSQLiteFAFA.GuardarLogrosEnLocal(logros);
                     ApiSQLiteFAFA.GuardarUsuarioLogrosEnLocal(usuarioLogros);
+                    ApiSQLiteFAFA.GuardarJuegosEnLocal(juegos);
+
                 }
             }
             catch (Exception ex)
