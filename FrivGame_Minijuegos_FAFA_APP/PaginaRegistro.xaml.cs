@@ -6,36 +6,59 @@ namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class PaginaRegistro : ContentPage
 {
-	public PaginaRegistro()
+    string avatarSeleccionado = "";
+
+    public PaginaRegistro()
 	{
 		InitializeComponent();
-	}
+        CargarAvatares();
+    }
+
+    private void CargarAvatares()
+    {
+        listaAvatares.ItemsSource = new List<string>
+        {
+            "avatar1.png",
+            "avatar2.png",
+            "avatar1.png",
+            "avatar2.png",
+            "avatar1.png",
+            "avatar2.png"
+        };
+    }
+
+    private void OnAvatarSeleccionado(object sender, SelectionChangedEventArgs e)
+    {
+
+        avatarSeleccionado = (string)e.CurrentSelection.FirstOrDefault();
+
+    }
 
     private async void clickRegistrar(object sender, EventArgs e)
     {
-        int ususActualId;
         bool errorDetectado = false;
         try
         {
 
             // 1. VALIDACIÓN INICIAL
-            if (string.IsNullOrWhiteSpace(eEmail.Text) || string.IsNullOrWhiteSpace(eNombreUsuario.Text) || string.IsNullOrWhiteSpace(ePassword.Text))
+            if (string.IsNullOrWhiteSpace(eEmail.Text) || string.IsNullOrWhiteSpace(eNombreUsuario.Text) || string.IsNullOrWhiteSpace(ePassword.Text) || string.IsNullOrEmpty(avatarSeleccionado))
                 throw new Exception("Todos los campos son obligatorios.");
+            
 
-            // 2. COMPROBAR CONEXIÓN (Vital si el registro depende de la nube)
+            // 2. COMPROBAR CONEXIÓN 
             if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
                 throw new Exception("Se requiere conexión a internet para registrarse.");
 
-            // 3. GUARDADO EN LA NUBE (Aiven asigna el ID Real)
-            // Insertamos el usuario y recuperamos el ID que MySQL generó automáticamente
+            // 3. GUARDADO EN LA NUBE 
+            // Insertamos el usuario y recuperamos el ID que MySQL genero automáticamente
             int idRealAiven = await ApiRestFAFA.InsertarUsuarioEnNube(eEmail.Text, eNombreUsuario.Text, ePassword.Text);
 
             if (idRealAiven > 0)
             {
                 // 4. CREAR PERFIL EN LA NUBE
-                // Ahora usamos el ID que nos dio Aiven, así no fallará la Foreign Key
+                // Ahora usamos el ID que nos dio Aiven, así no fallara nuestra Foreign Key
                 string nuevoUid = Guid.NewGuid().ToString();
-                Perfil perfilParaNube = new Perfil(idRealAiven, eNombreUsuario.Text, null) { PerfilUid = nuevoUid };
+                Perfil perfilParaNube = new Perfil(idRealAiven, eNombreUsuario.Text, avatarSeleccionado) { PerfilUid = nuevoUid };
 
                 await ApiRestFAFA.InsertarPerfilDirectoEnNube(perfilParaNube);
 
@@ -52,6 +75,7 @@ public partial class PaginaRegistro : ContentPage
         }
         catch (Exception ex) 
         {
+            lError.IsVisible = true;
             lError.TextColor = Colors.Red;
             lError.Text = ex.Message;
             errorDetectado = true;
@@ -79,4 +103,6 @@ public partial class PaginaRegistro : ContentPage
     {
         await Navigation.PushAsync(new PageInicioSesion());
     }
+
+  
 }

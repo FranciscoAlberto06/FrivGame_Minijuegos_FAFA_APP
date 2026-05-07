@@ -68,14 +68,60 @@
                             HeightRequest="50"/>
 
                         <Label 
+                            Text="Elige tu avatar"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            TextColor="White"
+                            HorizontalOptions="Center"/>
+
+                        <CollectionView x:Name="listaAvatares"
+                                        HeightRequest="110"
+                                        SelectionMode="Single"
+                                        SelectionChanged="OnAvatarSeleccionado"
+                                        HorizontalOptions="Center"
+                                        HorizontalScrollBarVisibility="Never">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border StrokeThickness="3"
+                                            Padding="2"
+                                            StrokeShape="RoundRectangle 40">
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroupList>
+                                                <VisualStateGroup x:Name="CommonStates">
+                                                    <VisualState x:Name="Normal">
+                                                        <VisualState.Setters>
+                                                            <Setter Property="Stroke" Value="Transparent"/>
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState x:Name="Selected">
+                                                        <VisualState.Setters>
+                                                            <Setter Property="Stroke" Value="#10B981"/>
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                </VisualStateGroup>
+                                            </VisualStateGroupList>
+                                        </VisualStateManager.VisualStateGroups>
+                                        <Image Source="{Binding}"
+                                               HeightRequest="80"
+                                               WidthRequest="80"
+                                               Aspect="AspectFill"/>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <Label 
                              x:Name="lError"
-                             Text="Usuario o contraseña incorrectos"
+                             Text=""
                              TextColor="Red" 
                              FontSize="13"
                              HorizontalOptions="Center"
                              IsVisible="False"
                              Margin="0,5,0,0"/>
-                        
+
                         <Button 
                             Text="Registrarse ahora"
                             HeightRequest="50"
@@ -88,7 +134,7 @@
 
                     </VerticalStackLayout>
                 </Border>
-   
+
                 <HorizontalStackLayout 
                     HorizontalOptions="Center"
                     Spacing="5">

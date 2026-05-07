@@ -106,7 +106,7 @@ public partial class PageRanking : ContentPage
         // 1. Extraemos las mejores marcas usando tu método de la API
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 
-        // 2. Procesamos la lista para aplicar colores de "resaltado"
+        // 2. Procesamos la lista para aplicar colores de resaltado
         foreach (Partida partida in listaRankings)
         {
             partida.NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(partida.IdPerfil);

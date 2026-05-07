@@ -15,7 +15,7 @@ namespace BGestionFAFA
     public class ApiRestFAFA
     {
 
-        private static string _urlBase = "https://localhost:7087/api";
+        private static string _urlBase = "https://127.0.0.1:7087/api";
         private static HttpClient _http = new HttpClient();
 
         #region USUARIO
@@ -69,8 +69,13 @@ namespace BGestionFAFA
         #region PERFIL
         public static async Task InsertarPerfilDirectoEnNube(Perfil perfil)
         {
-            // Mandamos el perfil a la API por POST
-            await _http.PostAsJsonAsync($"{_urlBase}/perfil/insertar", perfil);
+            HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/perfil/insertar", perfil);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error al crear perfil: {error}");
+            }
         }
 
         public static async Task SincronizarPerfiles(List<Perfil> perfiles)

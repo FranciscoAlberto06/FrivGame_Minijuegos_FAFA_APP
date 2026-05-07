@@ -75,6 +75,37 @@ namespace API.Controllers
 
             return Ok(idNuevo);
         }
+
+        [HttpGet("todos")]
+        public async Task<IActionResult> GetTodos()
+        {
+            List<PartidaSQL> partidas = new List<PartidaSQL>();
+
+            using MySqlConnection conn = new MySqlConnection(_connString);
+            await conn.OpenAsync();
+
+            string sql = "SELECT * FROM PARTIDA";
+            using MySqlCommand cmd = new MySqlCommand(sql, conn);
+            using MySqlDataReader reader = (MySqlDataReader)await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                partidas.Add(new PartidaSQL
+                {
+                    IdPartida = reader.GetInt32("id_partida"),
+                    IdJuego = reader.GetInt32("id_juego"),
+                    IdPerfil = reader.GetString("id_perfil"),
+                    Puntuacion = reader.GetInt32("puntuacion"),
+                    TiempoSegundos = reader.GetInt32("tiempo_segundos"),
+                    Victoria = reader.GetBoolean("victoria"),
+                    FechaHora = reader.GetDateTime("fecha_hora"),
+                    Sincronizada = true
+                });
+            }
+
+            return Ok(partidas);
+        }
+
     }
 
 }

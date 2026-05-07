@@ -65,7 +65,7 @@ namespace BModelosFAFA
 
             }
         }
-        public string AvatarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
         public string NombreUsuario { get; set; }
 
         // Esta propiedad no se guarda en la bd solo se usa para poder controlar el largo del progress bar segun la exp
