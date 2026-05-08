@@ -15,7 +15,7 @@ namespace BGestionFAFA
     public class ApiRestFAFA
     {
 
-        private static string _urlBase = "https://127.0.0.1:7087/api";
+        private static string _urlBase = "https://frivgameminijuegosfafaapp-production.up.railway.app/api";
         private static HttpClient _http = new HttpClient();
 
         #region USUARIO

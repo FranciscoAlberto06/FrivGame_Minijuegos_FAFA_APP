@@ -5,13 +5,15 @@
              Title="MenuJuegos"
              Shell.NavBarIsVisible="False"
              >
+    
     <Grid RowDefinitions="Auto, *">
 
         <Border Grid.Row="0" 
                 Margin="20,40,20,15" 
                 Padding="20" 
                 StrokeThickness="1"
-                Stroke="#333333">
+                Stroke="#333333"
+                >
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="25"/>
             </Border.StrokeShape>
@@ -78,7 +80,8 @@
                         Wrap="Wrap" 
                         JustifyContent="Center" 
                         AlignItems="Center" 
-                        Padding="10,0,10,20" />
+                        Padding="10,0,10,20"
+                        Margin="5"/>
         </ScrollView>
 
     </Grid>

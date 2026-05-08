@@ -7,7 +7,7 @@ namespace API.Hubs
 
         public async Task NotificarRankingActualizado(int idJuego)
         {
-            // Notifica a todos los clientes conectados
+            // Notifica a todos los que haya conectados en ese juego
             await Clients.All.SendAsync("RankingActualizado", idJuego);
         }
 

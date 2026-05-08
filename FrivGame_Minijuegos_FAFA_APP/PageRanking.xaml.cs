@@ -1,5 +1,6 @@
 using BGestionFAFA;
 using BModelosFAFA;
+using BModelosSQLFAFA;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -25,11 +26,9 @@ public partial class PageRanking : ContentPage
     {
         base.OnAppearing();
 
-        #if ANDROID
-                string urlHub = "http://192.168.1.X:5088/rankingHub";
-        #else
-            string urlHub = "https://localhost:7087/rankingHub";
-        #endif
+      
+        string urlHub = "https://frivgameminijuegosfafaapp-production.up.railway.app/rankingHub";
+       
 
         // Conectamos al hub de SignalR
         _conexionHub = new HubConnectionBuilder()
@@ -98,12 +97,18 @@ public partial class PageRanking : ContentPage
 
     private async void ActualizarRanking(int idJuego)
     {
-        // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos más recientes
+        // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos mas recientes
         if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
         {
-            await ApiRestFAFA.CargarPartidasDesdeNube();
+            List<PartidaSQL> partidas = await ApiRestFAFA.CargarPartidasDesdeNube();
+            ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
+
+            // tambien los perfiles por si es un usu nuevo que ha entrado en el ranking
+            List<Perfil> perfiles = await ApiRestFAFA.CargarPerfilesDesdeNube();
+            ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
+
         }
-        // 1. Extraemos las mejores marcas usando tu método de la API
+        // 1. Extraemos las mejores marcas usando el método de la API
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 
         // 2. Procesamos la lista para aplicar colores de resaltado
