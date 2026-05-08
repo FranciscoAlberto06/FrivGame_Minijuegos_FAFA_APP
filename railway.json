@@ -1,10 +1,9 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "dotnet restore API/API.csproj && dotnet publish API/API.csproj -c Release -o out"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "dotnet out/API.dll",
     "restartPolicyType": "ON_FAILURE"
   }
 }
