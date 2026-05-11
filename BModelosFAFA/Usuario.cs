@@ -79,22 +79,7 @@ namespace BModelosFAFA
         }
 
         public string Password {
-            get 
-            {
-                return _password;
-            }
-            set 
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new ArgumentException("La contraseña no puede estar vacia.");
-
-                string valorLimpio = value.Trim();
-
-
-                if (valorLimpio.Length < 5 )
-                    throw new ArgumentException("La contraseña debe tener al menos 5 digitos");
-
-            }
+            get; set;
         }
 
 

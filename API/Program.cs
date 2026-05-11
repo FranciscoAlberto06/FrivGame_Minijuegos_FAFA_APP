@@ -39,6 +39,10 @@ app.MapControllers();
 // Mapeamos el Hub de SignalR
 app.MapHub<RankingHub>("/rankingHub");
 
-
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
 app.Run();
