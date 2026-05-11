@@ -41,7 +41,7 @@ public partial class PaginaRegistro : ContentPage
         {
 
             // 1. VALIDACIÓN INICIAL
-            if (string.IsNullOrWhiteSpace(eEmail.Text) || string.IsNullOrWhiteSpace(eNombreUsuario.Text) || string.IsNullOrWhiteSpace(ePassword.Text) || string.IsNullOrEmpty(avatarSeleccionado))
+            if (string.IsNullOrEmpty(avatarSeleccionado))
                 throw new Exception("Todos los campos son obligatorios.");
             
 
@@ -62,7 +62,7 @@ public partial class PaginaRegistro : ContentPage
 
                 await ApiRestFAFA.InsertarPerfilDirectoEnNube(perfilParaNube);
 
-                // 5. SINCRONIZACIÓN HACIA DE(SQLite copia a Aiven)
+                // 5. SINCRONIZACIÓN DE(SQLite copia a Aiven)
                 await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
 
                 // 6. GUARDAR CONTRASEÑA SEGURA (SecureStorage local)
@@ -91,6 +91,7 @@ public partial class PaginaRegistro : ContentPage
                 ePassword.Text = "";
 
                 // Mostramos mensaje de que todo fue bien
+                lError.IsVisible = true;
                 lError.TextColor = Colors.Green;
                 lError.Text = "Usuario Creado Correctamente";
                 

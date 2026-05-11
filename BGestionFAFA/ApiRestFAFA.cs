@@ -34,10 +34,14 @@ namespace BGestionFAFA
             // 2.- Lo convertimos a JSON y lo mandamos a la API por POST
             HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/usuario/insertar", usuario);
 
-            // 3.- Leemos la respuesta de la API (el ID que genero la BD)
+            // 3.- Si la api devuelve un badrequest lanzamos una excepción con el mensaje de error que nos dio la API
+            if (!response.IsSuccessStatusCode)
+                throw new Exception((await response.Content.ReadAsStringAsync()).Trim('"'));
+
+            // 4.- Leemos la respuesta de la API (el ID que genero la BD)
             string resultado = await response.Content.ReadAsStringAsync();
 
-            // 4.- Convierto ese string a int y lo devolvemos
+            // 5.- Convierto ese string a int y lo devolvemos
             idGenerado = Convert.ToInt32(resultado);
 
             return idGenerado;
