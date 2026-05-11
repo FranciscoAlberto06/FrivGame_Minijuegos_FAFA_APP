@@ -35,8 +35,10 @@ namespace BGestionFAFA
             HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/usuario/insertar", usuario);
 
             // 3.- Si la api devuelve un badrequest lanzamos una excepción con el mensaje de error que nos dio la API
+            string contenido = await response.Content.ReadAsStringAsync();
+
             if (!response.IsSuccessStatusCode)
-                throw new Exception((await response.Content.ReadAsStringAsync()).Trim('"'));
+                throw new Exception(contenido.Trim('"'));
 
             // 4.- Leemos la respuesta de la API (el ID que genero la BD)
             string resultado = await response.Content.ReadAsStringAsync();
