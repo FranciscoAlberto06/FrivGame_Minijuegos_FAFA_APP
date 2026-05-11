@@ -22,19 +22,23 @@ public partial class BuscarParejas : ContentPage
         switch (temaActual)
         {
             case "Animales":
-                listaImagenes = new List<string> { "gato.png", "perro.png", "conejo.png", "pollito.png", "cerdo.png", "capibara.png", "gato.png", "perro.png", "conejo.png", "pollito.png", "cerdo.png", "capibara.png" };
+                listaImagenes = new List<string> { "gato.png", "perro.png", "conejo.png", "pollito.png", "cerdo.png", "capibara.png" };
                 break;
             case "Frutas":
+                listaImagenes = new List<string> { "fruta1.png", "fruta2.png", "fruta3.png", "fruta4.png", "fruta5.png", "fruta6.png" };
                 break;
             case "Banderas":
-                listaImagenes = new List<string> { "alemania.png", "argentina.jpg", "espana.png", "brasil.png", "francia.png", "moriles.jpg", "alemania.png", "argentina.jpg", "espana.png", "brasil.png", "francia.png", "moriles.jpg" };
+                listaImagenes = new List<string> { "alemania.png", "argentina.jpg", "espana.png", "brasil.png", "francia.png", "moriles.jpg" };
                 break;
             case "SuperHeroes":
+                listaImagenes = new List<string> { "superheroe1.png", "superheroe2.png", "superheroe3.png", "superheroe4.png", "superheroe5.png", "superheroe6.png" };
                 break;
             case "Version Especial Abelin":
-                listaImagenes = new List<string> { "gato1.png", "gato2.jpg", "gato3.jpg", "gato4.png", "gato5.jpg", "gato6.png", "gato1.png", "gato2.jpg", "gato3.jpg", "gato4.png", "gato5.jpg", "gato6.png" };
+                listaImagenes = new List<string> { "gato1.png", "gato2.jpg", "gato3.jpg", "gato4.png", "gato5.jpg", "gato6.png"};
                 break;
         }
+
+        listaImagenes.AddRange(listaImagenes); // Duplicamos la lista para tener las parejas
 
         return listaImagenes;
 

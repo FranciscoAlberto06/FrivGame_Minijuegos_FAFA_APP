@@ -301,11 +301,8 @@ namespace BGestionFAFA
             // Abrimos conexion
             using(conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
-                // Y Sacamos de nuestra tabla un usuario que tenga x emal
-                bool usuEncontrado = conexion.Table<UsuarioSQL>().Where(u => u.Email == email).Any();
-
-                // Si encontramos a alguien con ese email saltamos excpecion de que ya existe alguien con el
-                if (usuEncontrado)
+                var conteo = conexion.ExecuteScalar<int>("SELECT COUNT(*) FROM Usuario");
+                if (conteo > 0)
                 {
                     throw new Exception("ERROR: Ya existe un usuario con ese correo");
                 }
@@ -674,6 +671,24 @@ namespace BGestionFAFA
             }
         }
 
+        public static void GuardarUsuariosEnLocal(List<Usuario> usuarios)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                foreach (Usuario usuario in usuarios)
+                {
+                    conexion.InsertOrReplace(new UsuarioSQL
+                    {
+                        IdUsuario = usuario.IdUsuario,
+                        NombreUsuario = usuario.NombreUsuario,
+                        Email = usuario.Email,
+                        Password = usuario.Password,
+                        Sincronizada = true
+                    });
+                }
+            }
+        }
+
         public static void GuardarPerfilesEnLocal(List<Perfil> perfiles)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
@@ -708,6 +723,7 @@ namespace BGestionFAFA
                 }
             }
         }
+
 
         public static void GuardarLogrosEnLocal(List<Logro> logros)
         {
@@ -791,7 +807,6 @@ namespace BGestionFAFA
             
         }
 
-
-
+     
     }
 }

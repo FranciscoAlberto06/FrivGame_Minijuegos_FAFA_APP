@@ -32,33 +32,32 @@ namespace BGestionFAFA
                 Password = pass
             };
 
+            ApiSQLiteFAFA.ComprobarSiExisteUsuario(email); // Esto lanza una excepción si ya existe un usuario con ese email, así evitamos mandar a la API un usuario que no se va a insertar
+
+
             // 2.- Lo convertimos a JSON y lo mandamos a la API por POST
             HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/usuario/insertar", usuario);
 
-            // 3.- Si la api devuelve un badrequest lanzamos una excepción con el mensaje de error que nos dio la API
-            string contenido = await response.Content.ReadAsStringAsync();
+            // 4.- Leemos la respuesta de la API (el ID que genero la BD)
+            string resultado = await response.Content.ReadAsStringAsync();
 
-            if (!response.IsSuccessStatusCode)
-            {
-                try
-                {
-                    var json = System.Text.Json.JsonDocument.Parse(contenido);
-                    if (json.RootElement.TryGetProperty("mensaje", out var msg))
-                        throw new Exception(msg.GetString());
-                }
-                catch { }
-
-                throw new Exception(contenido.Trim('"'));
-            }
-            else
-            {
-                // 4.- Leemos la respuesta de la API (el ID que genero la BD)
-                string resultado = await response.Content.ReadAsStringAsync();
-
-                // 5.- Convierto ese string a int y lo devolvemos
-                idGenerado = Convert.ToInt32(resultado);
-            }
+            // 5.- Convierto ese string a int y lo devolvemos
+            idGenerado = Convert.ToInt32(resultado);
+            
             return idGenerado;
+        }
+        private static async Task<List<Usuario>> CargarUsuariosDesdeNube()
+        {
+            List<Usuario> usuarios;
+
+            HttpResponseMessage response = await _http.GetAsync($"{_urlBase}/usuario/todos");
+
+            if (response.IsSuccessStatusCode)
+                usuarios = await response.Content.ReadFromJsonAsync<List<Usuario>>();
+            else
+                usuarios = new List<Usuario>();
+
+            return usuarios;
         }
 
         public static async Task<Usuario> ExtraerDatosLoginPorEmail(string email)
@@ -281,6 +280,7 @@ namespace BGestionFAFA
                 // Solo cargamos si hay internet
                 if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
                 {
+                    List<Usuario> usuarios = await CargarUsuariosDesdeNube(); 
                     List<Perfil> perfiles = await CargarPerfilesDesdeNube();
                     List<PartidaSQL> partidas = await CargarPartidasDesdeNube();
                     List<Logro> logros = await CargarLogrosDesdeNube();
@@ -289,6 +289,7 @@ namespace BGestionFAFA
 
 
                     // Guardamos en SQLite local
+                    ApiSQLiteFAFA.GuardarUsuariosEnLocal(usuarios); 
                     ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
                     ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
                     ApiSQLiteFAFA.GuardarLogrosEnLocal(logros);
@@ -302,6 +303,8 @@ namespace BGestionFAFA
                 System.Diagnostics.Debug.WriteLine($"Error cargando: {ex.Message}");
             }
         }
+
+ 
         #endregion
 
         #region GESTION DE PASSWORD HASH
