@@ -39,4 +39,6 @@ app.MapControllers();
 // Mapeamos el Hub de SignalR
 app.MapHub<RankingHub>("/rankingHub");
 
+
+
 app.Run();

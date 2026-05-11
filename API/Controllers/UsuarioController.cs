@@ -27,20 +27,20 @@ namespace API.Controllers
                 await conn.OpenAsync();
 
                 // 2. Comprobamos si ya existe ese email
-                string sqlCheckEmail = "SELECT COUNT(*) FROM USUARIO WHERE email = @e";
-                using MySqlCommand cmdEmail = new MySqlCommand(sqlCheckEmail, conn);
-                cmdEmail.Parameters.AddWithValue("@e", usuario.Email);
-                int emailExiste = Convert.ToInt32(await cmdEmail.ExecuteScalarAsync());
-                if (emailExiste > 0)
-                    return BadRequest("ERROR: El correo electronico ya esta registrado.");
+                //string sqlCheckEmail = "SELECT COUNT(*) FROM USUARIO WHERE email = @e";
+                //using MySqlCommand cmdEmail = new MySqlCommand(sqlCheckEmail, conn);
+                //cmdEmail.Parameters.AddWithValue("@e", usuario.Email);
+                //int emailExiste = Convert.ToInt32(await cmdEmail.ExecuteScalarAsync());
+                //if (emailExiste > 0)
+                //    return BadRequest("ERROR: El correo electronico ya esta registrado.");
 
-                // 3. Comprobamos si ya existe ese nombre de usuario
-                string sqlCheckUser = "SELECT COUNT(*) FROM USUARIO WHERE username = @u";
-                using MySqlCommand cmdUser = new MySqlCommand(sqlCheckUser, conn);
-                cmdUser.Parameters.AddWithValue("@u", usuario.NombreUsuario);
-                int userExiste = Convert.ToInt32(await cmdUser.ExecuteScalarAsync());
-                if (userExiste > 0)
-                    return BadRequest("ERROR: El nombre de usuario ya esta registrado.");
+                //// 3. Comprobamos si ya existe ese nombre de usuario
+                //string sqlCheckUser = "SELECT COUNT(*) FROM USUARIO WHERE username = @u";
+                //using MySqlCommand cmdUser = new MySqlCommand(sqlCheckUser, conn);
+                //cmdUser.Parameters.AddWithValue("@u", usuario.NombreUsuario);
+                //int userExiste = Convert.ToInt32(await cmdUser.ExecuteScalarAsync());
+                //if (userExiste > 0)
+                //    return BadRequest("ERROR: El nombre de usuario ya esta registrado.");
 
                 string sql = "INSERT INTO USUARIO (email, username, password_hash) VALUES (@e, @u, @p)";
                 using MySqlCommand cmd = new MySqlCommand(sql, conn);
@@ -56,7 +56,7 @@ namespace API.Controllers
             }
             catch(Exception error)
             {
-                return StatusCode(500, error.Message);
+                return StatusCode(500, new { mensaje = error.Message });
 
             }
 
