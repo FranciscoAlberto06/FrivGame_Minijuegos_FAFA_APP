@@ -221,7 +221,7 @@ namespace API.Controllers
 
         private async Task EnviarEmailVerificacion(string email, string codigo)
         {
-            string apiKey = _config["SendGrid__ApiKey"];
+            string apiKey = _config["SendGrid:ApiKey"];
             SendGridClient client = new SendGridClient(apiKey);
 
             SendGridMessage msg = new SendGridMessage
