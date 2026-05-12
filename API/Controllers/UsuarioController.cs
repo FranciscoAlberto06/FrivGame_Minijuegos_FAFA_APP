@@ -226,7 +226,7 @@ namespace API.Controllers
 
             SendGridMessage msg = new SendGridMessage
             {
-                From = new EmailAddress("tu@email.com", "FrivGame"),
+                From = new EmailAddress("frivgameproyec@gmail.com", "FrivGame"),
                 Subject = "Verifica tu cuenta en FrivGame",
                 HtmlContent = $@"
             <h2>¡Bienvenido a FrivGame!</h2>
