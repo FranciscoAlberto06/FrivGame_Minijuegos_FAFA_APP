@@ -7,6 +7,7 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API.Controllers
 {
@@ -39,49 +40,58 @@ namespace API.Controllers
                 await conn.OpenAsync();
 
                 // 2. Comprobamos si ya existe ese email
-                //string sqlCheckEmail = "SELECT COUNT(*) FROM USUARIO WHERE email = @e";
-                //using MySqlCommand cmdEmail = new MySqlCommand(sqlCheckEmail, conn);
-                //cmdEmail.Parameters.AddWithValue("@e", usuario.Email);
-                //int emailExiste = Convert.ToInt32(await cmdEmail.ExecuteScalarAsync());
-                //if (emailExiste > 0)
-                //    return BadRequest("ERROR: El correo electronico ya esta registrado.");
+                string sqlCheckEmail = "SELECT COUNT(*) FROM USUARIO WHERE email = @e";
+                using MySqlCommand cmdEmail = new MySqlCommand(sqlCheckEmail, conn);
+                cmdEmail.Parameters.AddWithValue("@e", usuario.Email);
+                int emailExiste = Convert.ToInt32(await cmdEmail.ExecuteScalarAsync());
+                if (emailExiste > 0)
+                    return StatusCode(400, "ERROR: El correo electronico ya esta registrado.");
 
-                //// 3. Comprobamos si ya existe ese nombre de usuario
-                //string sqlCheckUser = "SELECT COUNT(*) FROM USUARIO WHERE username = @u";
-                //using MySqlCommand cmdUser = new MySqlCommand(sqlCheckUser, conn);
-                //cmdUser.Parameters.AddWithValue("@u", usuario.NombreUsuario);
-                //int userExiste = Convert.ToInt32(await cmdUser.ExecuteScalarAsync());
-                //if (userExiste > 0)
-                //    return BadRequest("ERROR: El nombre de usuario ya esta registrado.");
+                // 3. Comprobamos si ya existe ese nombre de usuario
+                string sqlCheckUser = "SELECT COUNT(*) FROM USUARIO WHERE username = @u";
+                using MySqlCommand cmdUser = new MySqlCommand(sqlCheckUser, conn);
+                cmdUser.Parameters.AddWithValue("@u", usuario.NombreUsuario);
+                int userExiste = Convert.ToInt32(await cmdUser.ExecuteScalarAsync());
+                if (userExiste > 0)
+                    return StatusCode(400, "ERROR: El nombre de usuario ya esta registrado.");
 
                 #region GENERAR CODIGOS DE VERIFICACION Y ENVIAR EMAIL
-                // Generamos 3 codigos aleatorios de 6 digitos
-                Random rnd = new Random();
-                string codigoCorrecto = rnd.Next(100000, 999999).ToString();
-                string codigo2 = rnd.Next(100000, 999999).ToString();
-                string codigo3 = rnd.Next(100000, 999999).ToString();
+                //// Generamos 3 codigos aleatorios de 6 digitos
+                //Random rnd = new Random();
+                //string codigoCorrecto = rnd.Next(100000, 999999).ToString();
+                //string codigo2 = rnd.Next(100000, 999999).ToString();
+                //string codigo3 = rnd.Next(100000, 999999).ToString();
 
-                // Los mezclamos para que el correcto no siempre esté en la misma posición
-                List<string> opciones = new List<string> { codigoCorrecto, codigo2, codigo3 }
-                                        .ToList();
+                //// Los mezclamos para que el correcto no siempre esté en la misma posición
+                //List<string> opciones = new List<string> { codigoCorrecto, codigo2, codigo3 }
+                //                        .ToList();
 
-                // Eliminamos cualquier codigo pendiente anterior para ese email (si el usuario ya había intentado registrarse antes)
-                _codigosPendientes.RemoveAll(x => x.email == usuario.Email);
+                //// Eliminamos cualquier codigo pendiente anterior para ese email (si el usuario ya había intentado registrarse antes)
+                //_codigosPendientes.RemoveAll(x => x.email == usuario.Email);
 
-                // Añadimos la opcion correcta a la lista de pendientes con su fecha de expiracion (15 minutos) y el usuario completo
-                _codigosPendientes.Add((usuario.Email, codigoCorrecto, DateTime.Now.AddMinutes(15), usuario));
+                //// Añadimos la opcion correcta a la lista de pendientes con su fecha de expiracion (15 minutos) y el usuario completo
+                //_codigosPendientes.Add((usuario.Email, codigoCorrecto, DateTime.Now.AddMinutes(15), usuario));
 
-                // Enviamos el email con el codigo correcto
-                await EnviarEmailVerificacion(usuario.Email, codigoCorrecto);
+                //// Enviamos el email con el codigo correcto
+                //await EnviarEmailVerificacion(usuario.Email, codigoCorrecto);
+
+                //// Delvomemos al proyecto las opciones
+                //return Ok(opciones);
                 #endregion
 
-                // Delvomemos al proyecto las opciones
-                return Ok(opciones);
 
+                string sql = "INSERT INTO USUARIO (email, username, password_hash) VALUES (@e, @u, @p)";
+                using MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@e", usuario.Email);
+                cmd.Parameters.AddWithValue("@u", usuario.NombreUsuario);
+                cmd.Parameters.AddWithValue("@p", GenerarHash(usuario.Password));
+                await cmd.ExecuteNonQueryAsync();
+
+                return Ok((int)cmd.LastInsertedId);
 
 
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 return StatusCode(500, new { mensaje = error.Message });
 
