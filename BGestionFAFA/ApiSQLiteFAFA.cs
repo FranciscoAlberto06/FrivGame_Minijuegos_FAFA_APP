@@ -301,8 +301,11 @@ namespace BGestionFAFA
             // Abrimos conexion
             using(conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
-                var conteo = conexion.ExecuteScalar<int>("SELECT COUNT(*) FROM Usuario");
-                if (conteo > 0)
+                // Y Sacamos de nuestra tabla un usuario que tenga x emal
+                bool usuEncontrado = conexion.Table<UsuarioSQL>().Where(u => u.Email == email).Any();
+
+                // Si encontramos a alguien con ese email saltamos excpecion de que ya existe alguien con el
+                if (usuEncontrado)
                 {
                     throw new Exception("ERROR: Ya existe un usuario con ese correo");
                 }

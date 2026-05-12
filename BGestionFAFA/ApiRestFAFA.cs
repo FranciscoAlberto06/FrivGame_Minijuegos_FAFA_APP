@@ -31,12 +31,14 @@ namespace BGestionFAFA
                 NombreUsuario = user,
                 Password = pass
             };
-
-            ApiSQLiteFAFA.ComprobarSiExisteUsuario(email); // Esto lanza una excepción si ya existe un usuario con ese email, así evitamos mandar a la API un usuario que no se va a insertar
-
+            //PUTO GUARRO
+            ApiSQLiteFAFA.ComprobarSiExisteUsuario(email); // Esto lanza una excepcion si ya existe un usuario con ese email, así evitamos mandar a la API un usuario que no se va a insertar
+            ApiSQLiteFAFA.ComprobarSiExisteNombreDePerfil(user); // Esto lanza una excepcion si ya existe un perfil con ese nombre de usuario, así evitamos mandar a la API un usuario que no se va a insertar
 
             // 2.- Lo convertimos a JSON y lo mandamos a la API por POST
             HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/usuario/insertar", usuario);
+
+          
 
             // 4.- Leemos la respuesta de la API (el ID que genero la BD)
             string resultado = await response.Content.ReadAsStringAsync();
