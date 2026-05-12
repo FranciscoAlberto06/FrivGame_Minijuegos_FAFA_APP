@@ -31,7 +31,6 @@ namespace BGestionFAFA
                 NombreUsuario = user,
                 Password = pass
             };
-            //PUTO GUARRO
             ApiSQLiteFAFA.ComprobarSiExisteUsuario(email); // Esto lanza una excepcion si ya existe un usuario con ese email, así evitamos mandar a la API un usuario que no se va a insertar
             ApiSQLiteFAFA.ComprobarSiExisteNombreDePerfil(user); // Esto lanza una excepcion si ya existe un perfil con ese nombre de usuario, así evitamos mandar a la API un usuario que no se va a insertar
 
