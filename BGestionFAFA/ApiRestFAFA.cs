@@ -37,15 +37,25 @@ namespace BGestionFAFA
             // 2.- Lo convertimos a JSON y lo mandamos a la API por POST
             HttpResponseMessage response = await _http.PostAsJsonAsync($"{_urlBase}/usuario/insertar", usuario);
 
-          
+            // 3. COMPROBAMOS SI SALIO BIEN
+            if (response.IsSuccessStatusCode)
+            {
+                // Si todo fue bien sacamos el ID que generó la BD a través de la API leyendo el contenido de la respuesta
+                string resultado = await response.Content.ReadAsStringAsync();
+                return Convert.ToInt32(resultado);
+            }
+            else
+            {
 
-            // 4.- Leemos la respuesta de la API (el ID que genero la BD)
-            string resultado = await response.Content.ReadAsStringAsync();
+                // Si no fue bien leemos el mensaje de error que nos manda la API
+                string mensajeError = await response.Content.ReadAsStringAsync();
 
-            // 5.- Convierto ese string a int y lo devolvemos
-            idGenerado = Convert.ToInt32(resultado);
-            
-            return idGenerado;
+                // Lanzamos una excepción con el texto para que la UI la capture
+                throw new Exception(mensajeError);
+            }
+
+         
+         
         }
         private static async Task<List<Usuario>> CargarUsuariosDesdeNube()
         {

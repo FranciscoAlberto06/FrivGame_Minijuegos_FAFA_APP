@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FrivGame_Minijuegos_FAFA_APP.PerfilDetallePage"
+             Title="PerfilDetallePage">
+
+
+        <ScrollView>
+            <VerticalStackLayout Padding="25" Spacing="20">
+
+                <!-- CABECERA: Botón de cerrar -->
+                <ImageButton Source="close_icon.png" 
+                         HorizontalOptions="End"
+                         HeightRequest="25"
+                         WidthRequest="25"
+                         BackgroundColor="Transparent"
+                         Clicked="OnVolverClicked"/>
+
+                <!-- TARJETA PRINCIPAL: Avatar y Progreso -->
+                <Border Stroke="#E0E0E0" StrokeThickness="1" Padding="20" BackgroundColor="#F9F9F9">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="15">
+                        <HorizontalStackLayout Spacing="15">
+                            <Border WidthRequest="80" HeightRequest="80" StrokeThickness="3" Stroke="Crimson">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="40"/>
+                                </Border.StrokeShape>
+                                <Image Source="{Binding AvatarUrl}" Aspect="AspectFill"/>
+                            </Border>
+
+                            <VerticalStackLayout VerticalOptions="Center">
+                                <Label Text="{Binding NombreUsuario}" TextColor="Black" FontSize="22" FontAttributes="Bold"/>
+                                <Label Text="Jugador de FrivGame" TextColor="#666666" FontSize="13"/>
+                            </VerticalStackLayout>
+                        </HorizontalStackLayout>
+
+                        <!-- Barra de Progreso de XP -->
+                        <VerticalStackLayout Spacing="5">
+                            <HorizontalStackLayout HorizontalOptions="End">
+                                <Label Text="{Binding XpTotal}" TextColor="Black" FontAttributes="Bold" FontSize="12"/>
+                                <Label Text=" / 1000 XP" TextColor="#888888" FontSize="11" Margin="2,0,0,0"/>
+                            </HorizontalStackLayout>
+                            <ProgressBar Progress="{Binding BarraProgreso}" ProgressColor="Crimson" ScaleY="2"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ESTADÍSTICAS RÁPIDAS -->
+                <Grid ColumnDefinitions="*, *, *" Padding="5">
+                    <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                        <Label Text="NIVEL" TextColor="Crimson" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Text="{Binding Nivel}" TextColor="Black" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                        <Label Text="LOGROS" TextColor="Crimson" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Text="12" TextColor="Black" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                        <Label Text="RANGO" TextColor="Crimson" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Text="#1" TextColor="Black" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- SECCIÓN: SEGURIDAD (Lo nuevo) -->
+                <Label Text="SEGURIDAD Y CUENTA" TextColor="#555555" FontSize="12" FontAttributes="Bold" Margin="5,10,0,0"/>
+                <Border Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="#F9F9F9" Padding="20">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+
+                    <VerticalStackLayout Spacing="15">
+                        <Entry x:Name="TxtPassActual" Placeholder="Contraseña Actual" IsPassword="True" 
+                           TextColor="Black" PlaceholderColor="#BBBBBB" BackgroundColor="White"/>
+
+                        <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                        <Entry x:Name="TxtPassNueva1" Placeholder="Nueva Contraseña" IsPassword="True" 
+                           TextColor="Black" PlaceholderColor="#BBBBBB" BackgroundColor="White"/>
+
+                        <Entry x:Name="TxtPassNueva2" Placeholder="Repite Nueva Contraseña" IsPassword="True" 
+                           TextColor="Black" PlaceholderColor="#BBBBBB" BackgroundColor="White"/>
+
+                        <Button Text="ACTUALIZAR CONTRASEÑA" Clicked="OnCambiarPasswordClicked"
+                            BackgroundColor="Black" TextColor="White" FontAttributes="Bold" CornerRadius="10"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- SECCIÓN: LOGROS -->
+                <Label Text="LOGROS RECIENTES" TextColor="#555555" FontSize="12" FontAttributes="Bold" Margin="5,10,0,0"/>
+                <Border Stroke="#E0E0E0" Padding="15" BackgroundColor="#F9F9F9">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="15"/>
+                    </Border.StrokeShape>
+                    <HorizontalStackLayout Spacing="15">
+                        <Image Source="trofeo_global.png" HeightRequest="40" WidthRequest="40"/>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="Primeros Pasos" TextColor="Black" FontAttributes="Bold"/>
+                            <Label Text="Has jugado a todos los juegos" TextColor="#888888" FontSize="12"/>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- ACCIONES FINALES -->
+                <Button Text="CERRAR SESIÓN" Clicked="OnCerrarSesionClicked"
+                    BackgroundColor="Crimson" TextColor="White" FontAttributes="Bold" 
+                    CornerRadius="10" HeightRequest="50" Margin="0,10,0,0"/>
+
+                <Button Text="CERRAR PERFIL" Clicked="OnVolverClicked"
+                    BackgroundColor="Transparent" TextColor="#666666" Margin="0,0,0,20"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>

@@ -14,6 +14,10 @@
                 StrokeThickness="1"
                 Stroke="#333333"
                 >
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPerfilDetalleClicked" />
+            </Border.GestureRecognizers>
+            
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="25"/>
             </Border.StrokeShape>

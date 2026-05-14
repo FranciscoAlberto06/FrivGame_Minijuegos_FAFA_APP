@@ -191,4 +191,16 @@ public partial class MenuJuegos : ContentPage
         await Navigation.PushAsync(new PageRanking(PerfilActual.PerfilUid));
 
     }
+
+    private async void OnPerfilDetalleClicked(object sender, TappedEventArgs e)
+    {
+        // Hacemos una pequeña animación de escala para dar feedback visual al tocar
+        Border border = (Border)sender;
+        await border.ScaleTo(0.98, 50);
+        await border.ScaleTo(1.0, 50);
+
+        // Navegamos a la página de detalles de forma Modal (emergente)
+        // Le pasamos el PerfilActual para mostrar sus datos
+        await Navigation.PushModalAsync(new PerfilDetallePage(PerfilActual));
+    }
 }

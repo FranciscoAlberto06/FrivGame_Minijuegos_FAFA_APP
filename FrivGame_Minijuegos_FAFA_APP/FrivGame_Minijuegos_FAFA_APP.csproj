@@ -71,6 +71,9 @@
 		<MauiXaml Update="PaginaRegistro.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="PerfilDetallePage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="SeleccionTemaParejas.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
