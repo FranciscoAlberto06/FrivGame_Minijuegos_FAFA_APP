@@ -3,6 +3,7 @@
 using BGestionFAFA;
 using BModelosFAFA;
 using BModelosSQLFAFA;
+using Plugin.Maui.Audio;
 
 namespace FrivGame_Minijuegos_FAFA_APP;
 
@@ -53,11 +54,16 @@ public partial class PageInicioSesion : ContentPage
 
         // 2. ESPERAR UN SEGUNDO
         await Task.Delay(1000);
+        // Preparamos nuestra musica a poner
+        // Hemos usado el nudget llamado  Plugin.Maui.Audio
+        IAudioPlayer player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("boing_musica.mp3"));
+ 
 
         // 3. APARECER Y REBOTAR
+
         // Primero le damos opacidad para que se ve
         await LogoImage.FadeTo(1, 200);
-
+        player.Play();
         // Despues lo agrandomos un poco más de lo normal 
         await LogoImage.ScaleTo(1.9, 400);
 
@@ -65,6 +71,7 @@ public partial class PageInicioSesion : ContentPage
         await LogoImage.ScaleTo(1.0, 400);
 
         // 4. SE PARA OTRO SEGUNDO
+        player.Stop();
         await Task.Delay(1000);
 
         // 5. DESAPARECER LENTAMENTE
