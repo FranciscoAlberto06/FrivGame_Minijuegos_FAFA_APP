@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.SignalR;
 using MySqlConnector;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.Cryptography;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -228,6 +230,83 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("hash")]
+        public async Task<IActionResult> ObtenerHash([FromQuery] int idUsuario)
+        {
+            try
+            {
+                // Abrimos conexión
+                using MySqlConnection conn = new MySqlConnection(_connString);
+                await conn.OpenAsync();
+
+                // Consulta SQL
+                string sql = @"SELECT password_hash 
+                       FROM USUARIO 
+                       WHERE id_usuario = @id 
+                       LIMIT 1";
+
+                using MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@id", idUsuario);
+
+                object resultado = await cmd.ExecuteScalarAsync();
+
+                // Si no existe el usuario
+                if (resultado == null)
+                {
+                    return NotFound("Usuario no encontrado");
+                }
+
+                // Devolvemos el hash
+                return Ok(resultado.ToString());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    mensaje = ex.Message
+                });
+            }
+        }
+
+
+        /// <summary>
+        /// Cambia la contraseña de un usuario
+        /// </summary>
+        [HttpPut("cambiar-password")]
+        public async Task<IActionResult> CambiarPassword([FromQuery] int idUsuario, [FromQuery] string nuevaPassword)
+        {
+            try
+            {
+                using MySqlConnection conn = new MySqlConnection(_connString);
+                await conn.OpenAsync();
+
+                string nuevaHash = GenerarHash(nuevaPassword);
+
+                string sql = @"UPDATE USUARIO
+                       SET password_hash = @pass
+                       WHERE id_usuario = @id";
+
+                using MySqlCommand cmd = new MySqlCommand(sql, conn);
+
+                cmd.Parameters.AddWithValue("@pass", nuevaHash);
+                cmd.Parameters.AddWithValue("@id", idUsuario);
+
+                int filas = await cmd.ExecuteNonQueryAsync();
+
+                if (filas == 0)
+                    return NotFound("Usuario no encontrado");
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    mensaje = ex.Message
+                });
+            }
+        }
+
 
         private string GenerarHash(string password)
         {
@@ -244,6 +323,7 @@ namespace API.Controllers
             }
             return builder.ToString();
         }
+
 
         private async Task EnviarEmailVerificacion(string email, string codigo)
         {

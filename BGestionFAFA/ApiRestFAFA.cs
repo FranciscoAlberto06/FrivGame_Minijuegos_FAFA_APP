@@ -366,7 +366,43 @@ namespace BGestionFAFA
             }
         }
 
-      
+        public static async Task<bool> CambiarPassword(int idUsuario, string nuevaPassword)
+        {
+            HttpResponseMessage response =await _http.PutAsync($"{_urlBase}/usuario/cambiar-password?idUsuario={idUsuario}&nuevaPassword={nuevaPassword}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            throw new Exception("Error al cambiar contraseña");
+        }
+
+        public static async Task<bool> VerificarPassword(int idUsuario, string passwordAComprobar)
+        {
+            // 1. Generamos el hash de la contraseña a comprobar
+            string hashAComprobar = GenerarHash(passwordAComprobar);
+
+            // 2. Hacemos una petición GET a la API para obtener el hash real del usuario
+            HttpResponseMessage response = await _http.GetAsync($"{_urlBase}/usuario/hash?idUsuario={idUsuario}");
+            if (response.IsSuccessStatusCode)
+            {
+                string hashReal = await response.Content.ReadAsStringAsync();
+                // 3. Comparamos ambos hashes
+                if (hashAComprobar != hashReal)
+                {
+                    throw new Exception("Contraseña incorrecta");
+
+                }
+
+                return true;
+            }
+            else
+            {
+                throw new Exception("Error al extraer contraseña");
+            }
+        }
+
 
         #endregion
     }

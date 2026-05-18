@@ -69,10 +69,10 @@ public partial class PerfilDetallePage : ContentPage
                 // Si no es nulo o vacio, actualizamos el nombre del perfil
                 if (!string.IsNullOrWhiteSpace(nuevoNombre))
                 {
-                    perfilActual.NombreUsuario = nuevoNombre;
-                    await ApiRestFAFA.ModificarNombre(perfilActual);
+                    //perfilActual.NombreUsuario = nuevoNombre;
+                    //await ApiRestFAFA.ModificarNombre(perfilActual);
 
-                    await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
+                    //await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
 
 
 
@@ -127,31 +127,55 @@ public partial class PerfilDetallePage : ContentPage
 
     private async void OnCambiarPasswordClicked(object sender, EventArgs e)
     {
-        string actual = TxtPassActual.Text;
+        string passIntento = TxtPassActual.Text;
         string nueva1 = TxtPassNueva1.Text;
         string nueva2 = TxtPassNueva2.Text;
 
-        // 1. Validaciones básicas
-        if (string.IsNullOrEmpty(actual) || string.IsNullOrEmpty(nueva1))
+        try
         {
-            await DisplayAlert("Error", "Rellena todos los campos", "OK");
+            // 1. Validaciones básicas
+            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+            {
+                if (string.IsNullOrEmpty(passIntento) || string.IsNullOrEmpty(nueva1))
+                {
+
+                    throw new Exception("No puede ser nulas o vacias");
+
+                }
+                else if (nueva1 != nueva2)
+                {
+                    throw new Exception("Las nuevas contraseñas no coinciden");
+                }
+                else if (nueva1.Length <= 5)
+                {
+                    throw new Exception("Las nueva contraseña  debe tener el menos 6 caracteres");
+                }
+                else
+                {
+                    // 2. Aquí llamarías a tu API para actualizar
+
+                    // Validamos la contraseña si es esa o no
+                    await ApiRestFAFA.VerificarPassword(perfilActual.IdUsuario, passIntento);
+
+
+                    // Si todo va bien, actualizamos la contraseña en la nube y localmente
+                    
+                    
+                    bool exito = await ApiRestFAFA.CambiarPassword(perfilActual.IdUsuario, nueva1);
+                    
+
+                    await DisplayAlert("Éxito", "Contraseña actualizada correctamente", "OK");
+
+                }
+            }
+            else
+            {
+                throw new Exception("Necesitas internet para modificar tu contraseña");
+            }
         }
-        else if (nueva1 != nueva2)
+        catch (Exception ex)
         {
-            await DisplayAlert("Error", "Las nuevas contraseñas no coinciden", "OK");
-        }
-        else 
-        {
-            // 2. Aquí llamarías a tu API para actualizar
-
-            // Validamos la contraseña si es esa o no
-
-            // Si todo va bien, actualizamos la contraseña en la nube y localmente
-
-            // bool exito = await ApiService.CambiarPassword(perfilActual.IdUsuario, actual, nueva1);
-
-            await DisplayAlert("Éxito", "Contraseña actualizada correctamente", "OK");
-
+            await DisplayAlert("Error", $"Ha ocurrido un error: {ex.Message}", "OK");
         }
     }
 
