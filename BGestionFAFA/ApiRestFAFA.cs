@@ -140,6 +140,13 @@ namespace BGestionFAFA
 
             return perfiles;
         }
+
+        public static async Task ModificarNombre(Perfil perfilActual)
+        {
+            await _http.PutAsJsonAsync($"{_urlBase}/usuario/sincronizar-nombre", perfilActual);
+
+        }
+
         #endregion
 
         #region PARTIDA
@@ -352,6 +359,7 @@ namespace BGestionFAFA
         }
 
       
+
         #endregion
     }
 }

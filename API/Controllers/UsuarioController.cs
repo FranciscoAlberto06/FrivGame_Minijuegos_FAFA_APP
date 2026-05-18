@@ -131,10 +131,21 @@ namespace API.Controllers
             using MySqlConnection conn = new MySqlConnection(_connString);
             await conn.OpenAsync();
 
-            foreach (Usuario user in usuarios)
+            foreach (Usuario usuario in usuarios)
             {
-                string passHash = GenerarHash(user.Password);
+                string passHash = GenerarHash(usuario.Password);
 
+
+
+                // Comprobamos si ya existe ese nombre de usuario (ignorando al propio usuario que hace la petición)
+                string sqlCheckUser = "SELECT COUNT(*) FROM USUARIO WHERE username = @u AND id_usuario != @id";
+                using MySqlCommand cmdUser = new MySqlCommand(sqlCheckUser, conn);
+                cmdUser.Parameters.AddWithValue("@u", usuario.NombreUsuario);
+                cmdUser.Parameters.AddWithValue("@id", usuario.IdUsuario); // <-- ¡ESTO ES LA CLAVE!
+
+                int userExiste = Convert.ToInt32(await cmdUser.ExecuteScalarAsync());
+                if (userExiste > 0)
+                    return StatusCode(400, "ERROR: El nombre de usuario ya está registrado por otra persona.");
                 // Incluimos id_usuario en el INSERT para mantener la relación,
                 // y añadimos nombre_usuario en el UPDATE para que guarde el cambio de nombre.
                 string query = @"INSERT INTO USUARIO (id_usuario, nombre_usuario, email, password_hash) 
@@ -142,9 +153,9 @@ namespace API.Controllers
                          ON DUPLICATE KEY UPDATE nombre_usuario = @user, password_hash = @pass";
 
                 using MySqlCommand cmd = new MySqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@id", user.IdUsuario);
-                cmd.Parameters.AddWithValue("@user", user.NombreUsuario ?? "Usuario");
-                cmd.Parameters.AddWithValue("@email", user.Email);
+                cmd.Parameters.AddWithValue("@id", usuario.IdUsuario);
+                cmd.Parameters.AddWithValue("@user", usuario.NombreUsuario ?? "Usuario");
+                cmd.Parameters.AddWithValue("@email", usuario.Email);
                 cmd.Parameters.AddWithValue("@pass", passHash);
 
                 await cmd.ExecuteNonQueryAsync();

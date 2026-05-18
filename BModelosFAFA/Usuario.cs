@@ -12,7 +12,6 @@ namespace BModelosFAFA
 
         string _email;
         string _nombreUsuario;
-        string _password;
 
         public Usuario(string correo, string usuName)
         {
@@ -35,7 +34,7 @@ namespace BModelosFAFA
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new ArgumentException("El email no puede estar vacío.");
+                    throw new Exception("El email no puede estar vacío.");
 
                 ComprobarEmail(value.Trim());
                 _email = value.Trim();
@@ -52,13 +51,13 @@ namespace BModelosFAFA
             {
                 // 1. Validar nulo o vacío
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new ArgumentException("El nombre de usuario no puede estar vacío.");
+                    throw new Exception("El nombre de usuario no puede estar vacío.");
 
                 string valorLimpio = value.Trim();
 
                 // 2. Validar rango (mínimo 3, máximo 20 por ejemplo)
                 if (valorLimpio.Length < 3 || valorLimpio.Length > 20)
-                    throw new ArgumentException("El nombre de usuario debe tener entre 3 y 20 caracteres.");
+                    throw new Exception("El nombre de usuario debe tener entre 3 y 20 caracteres.");
 
                 _nombreUsuario = valorLimpio;
             }

@@ -643,7 +643,7 @@ namespace BGestionFAFA
                 if (perfilLocal != null)
                 {
                     perfilLocal.NombreUsuario = nuevoNombre;
-                    perfilLocal.Sincronizada = false; // <-- Así la API sabrá que debe subirlo a la nube
+                    perfilLocal.Sincronizada = false; // Así la API sabrá que debe subirlo a la nube
 
                     conexion.Update(perfilLocal);
                 }
@@ -659,7 +659,7 @@ namespace BGestionFAFA
                 if (usuarioLocal != null)
                 {
                     usuarioLocal.NombreUsuario = nuevoNombre;
-                    usuarioLocal.Sincronizada = false; // Marcamos también si tu lógica de sincronización monitoriza usuarios
+                    usuarioLocal.Sincronizada = false; // Marcamos también 
 
                     conexion.Update(usuarioLocal);
                 }
