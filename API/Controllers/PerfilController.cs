@@ -92,7 +92,7 @@ namespace API.Controllers
 
                 // 3. Si el nombre está libre, actualizamos la tabla USUARIO (Padre)
                 // (Nota: Asegúrate de si tu columna en MySQL es 'username' o 'nombre_usuario')
-                string sqlUsuario = "UPDATE USUARIO SET user_name = @nom WHERE id_usuario = @id";
+                string sqlUsuario = "UPDATE USUARIO SET username = @nom WHERE id_usuario = @id";
                 using (MySqlCommand cmdUsuario = new MySqlCommand(sqlUsuario, conn, trans))
                 {
                     cmdUsuario.Parameters.AddWithValue("@nom", perfilACambiar.NombreUsuario);
