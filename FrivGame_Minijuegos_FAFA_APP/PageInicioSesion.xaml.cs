@@ -19,12 +19,9 @@ public partial class PageInicioSesion : ContentPage
     private async void CargarBD()
     {
    
-        // Cargamos siempre los datos locales del dispositivo
-        #region CARGAR DATOS LOCALES
-        // Cargamos todos los datos locales que tenga ya el usuario de sqlite
+   
         // Cargamos la rutas y creamos si es necesario los archivos sqlite si es nuevo dispositivo
         ApiSQLiteFAFA.ComprobarRutasSQL(FileSystem.AppDataDirectory);
-        #endregion
 
         // TODO: Para cuando hagamosla parte de la nube
         //Comprobamos el estado de la red

@@ -299,7 +299,7 @@ namespace BGestionFAFA
                     List<Juego> juegos = await CargarJuegosDesdeNube();
 
 
-                    // Guardamos en SQLite local
+                    // Guardamos en SQLite local 
                     ApiSQLiteFAFA.GuardarUsuariosEnLocal(usuarios); 
                     ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
                     ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
@@ -337,6 +337,13 @@ namespace BGestionFAFA
 
                 return builder.ToString(); // Esto devuelve algo como "a665a4592042..."
             }
+        }
+
+        public async static Task ModificarNombre(string nuevoNombre, Perfil perfil)
+        {
+            // Actualizamos el nombre del perfil y usuario en la nube a través de la API
+            await _http.PutAsJsonAsync($"{_urlBase}/perfil/modificar-nombre", perfil);
+
         }
         #endregion
     }

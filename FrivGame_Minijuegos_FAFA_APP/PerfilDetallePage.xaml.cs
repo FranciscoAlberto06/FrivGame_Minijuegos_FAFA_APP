@@ -7,17 +7,21 @@ public partial class PerfilDetallePage : ContentPage
 {
 
     // Lista de imágenes disponibles en tu carpeta Resources/Images
-    public List<string> MisFotos { get; set; } = new List<string>
+    private List<string> MisFotos { get; set; } = new List<string>
     {
         "avatar1.png", "avatar2.png", "avatar3.png", "avatar4.png"
     };
+
+    private Perfil perfilActual;
 
     public PerfilDetallePage(Perfil perfil)
 	{
 		InitializeComponent();
        
         this.BindingContext = perfil;
+        perfilActual = perfil;
         ColAvatares.ItemsSource = MisFotos;
+        CargarLogros(perfil);
     }
 
     private async void OnVolverClicked(object sender, EventArgs e)
@@ -66,6 +70,7 @@ public partial class PerfilDetallePage : ContentPage
                 if (!string.IsNullOrWhiteSpace(nuevoNombre))
                 {
                     // TODO: Implementar la lógica para actualizar el nombre en la nube y localmente
+                    await ApiRestFAFA.ModificarNombre(nuevoNombre, perfilActual);
                 }
                 else
                 {
@@ -158,5 +163,73 @@ public partial class PerfilDetallePage : ContentPage
 
         }
     }
+
+    private void CargarLogros(Perfil perfil)
+    {
+        //1. Sacamos todos los logros y cuales tiene desbloqueados el perfil
+        List<Logro> todosLosLogros = ApiSQLiteFAFA.ExtraerTodosLosLogros();
+        List<int> logrosDesbloqueados = ApiSQLiteFAFA.ExtraerIdsLogrosPorPerfil(perfil.PerfilUid);
+
+        listaLogros.Children.Clear();
+
+        // 2. Bucle que recorre todos los logros
+        foreach (Logro logro in todosLosLogros.OrderByDescending(l => logrosDesbloqueados.Contains(l.IdLogro)))
+        {
+            // 3. Creamos una tarjeta por cada logros con mas o menos opacidad segun si lo tiene desbloqeuado
+            bool desbloqueado = logrosDesbloqueados.Contains(logro.IdLogro);
+
+            Border tarjeta = new Border
+            {
+                WidthRequest = 150,
+                HeightRequest = 150,
+                Margin = new Thickness(5),
+                Padding = new Thickness(10),
+                BackgroundColor = Colors.White,
+                Stroke = Color.FromArgb("#E0E0E0"),
+                StrokeThickness = 1,
+                // Si tiene logro 0 opacidad, y si lo tiene bajamos la opacidad
+                Opacity = desbloqueado ? 1.0 : 0.3,
+                // Para redondearlo
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 15 }
+            };
+
+            VerticalStackLayout contenido = new VerticalStackLayout
+            {
+                Spacing = 5,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+
+            contenido.Children.Add(new Image
+            {
+                Source = "trofeo_global.png",
+                HeightRequest = 50,
+                WidthRequest = 50,
+                HorizontalOptions = LayoutOptions.Center
+            });
+
+            contenido.Children.Add(new Label
+            {
+                Text = logro.Nombre,
+                FontAttributes = FontAttributes.Bold,
+                FontSize = 12,
+                HorizontalOptions = LayoutOptions.Center,
+                HorizontalTextAlignment = TextAlignment.Center
+            });
+
+            contenido.Children.Add(new Label
+            {
+                Text = $"+{logro.XpPremio} XP",
+                TextColor = Colors.Crimson,
+                FontSize = 11,
+                FontAttributes = FontAttributes.Bold,
+                HorizontalOptions = LayoutOptions.Center
+            });
+
+            tarjeta.Content = contenido;
+            listaLogros.Children.Add(tarjeta);
+        }
+    }
+
 
 }

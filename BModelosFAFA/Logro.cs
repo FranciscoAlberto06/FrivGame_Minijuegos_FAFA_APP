@@ -13,5 +13,8 @@ namespace BModelosFAFA
         public string? Nombre { get; set; }
         public string? CondicionDesbloqueo { get; set; }
         public int XpPremio { get; set; }
+
+        public float Opacidad { get; set; }
+
     }
 }

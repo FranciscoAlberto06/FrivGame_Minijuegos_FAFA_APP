@@ -598,6 +598,32 @@ namespace BGestionFAFA
 
         }
 
+        public static List<Logro> ExtraerTodosLosLogros()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<LogroSQL>().ToList().Select(l => new Logro
+                {
+                    IdLogro = l.IdLogro,
+                    IdJuego = l.IdJuego,
+                    Nombre = l.Nombre,
+                    CondicionDesbloqueo = l.CondicionDesbloqueo,
+                    XpPremio = l.XpPremio
+                }).ToList();
+            }
+        }
+
+        public static List<int> ExtraerIdsLogrosPorPerfil(string perfilUid)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<PerfilLogroSQL>()
+                               .Where(pl => pl.IdPerfil == perfilUid)
+                               .Select(pl => pl.IdLogro)
+                               .ToList();
+            }
+        }
+
 
         #endregion
 
