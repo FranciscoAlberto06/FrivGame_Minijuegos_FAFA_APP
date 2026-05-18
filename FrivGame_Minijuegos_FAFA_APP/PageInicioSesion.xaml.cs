@@ -172,8 +172,9 @@ public partial class PageInicioSesion : ContentPage
 
                 // Esperamos 2 s y navegamos
                 await Task.Delay(2000);
-                // Ocultamos mensaje de error por si volvemos
-                lError.IsVisible = false;
+
+                lError.IsVisible = false;  // Ocultamos mensaje de error por si volvemos
+
                 await Navigation.PushAsync(new MenuJuegos(idUsuario));
 
             }

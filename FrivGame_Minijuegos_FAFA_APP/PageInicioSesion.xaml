@@ -91,6 +91,7 @@
 
                     <!-- Boton -->
                     <Button 
+                        x:Name="bInicio"
                         Text="Iniciar sesión"
                         HeightRequest="50"
                         CornerRadius="15"

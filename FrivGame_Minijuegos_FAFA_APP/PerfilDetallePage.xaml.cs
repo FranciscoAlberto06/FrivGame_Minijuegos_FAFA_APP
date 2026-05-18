@@ -133,7 +133,7 @@ public partial class PerfilDetallePage : ContentPage
 
         try
         {
-            // 1. Validaciones básicas
+            // 1. Validaciones basicas
             if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
             {
                 if (string.IsNullOrEmpty(passIntento) || string.IsNullOrEmpty(nueva1))
@@ -162,9 +162,25 @@ public partial class PerfilDetallePage : ContentPage
                     
                     
                     bool exito = await ApiRestFAFA.CambiarPassword(perfilActual.IdUsuario, nueva1);
-                    
 
-                    await DisplayAlert("Éxito", "Contraseña actualizada correctamente", "OK");
+                    if (exito)
+                    {
+                        
+
+                        await DisplayAlert("Éxito", "Contraseña actualizada correctamente. Por seguridad redigiremos al inicio de sesion. Muchas gracias por su paciencia", "OK");
+
+                        // Recargamos entrys
+                        TxtPassActual.Text = "";
+                        TxtPassNueva1.Text = "";
+                        TxtPassNueva2.Text = "";
+
+                        // Cerramos lo que tenemos abierto
+                        await Navigation.PopModalAsync();
+
+                        // En la app shell tenemos el login como la pgian raiz llamamemos a este y no a page Inicio sesion porque da problema mostrando el titulo de la paginga y arruina el diseño
+                        Application.Current.MainPage = new AppShell();
+
+                    }   
 
                 }
             }
