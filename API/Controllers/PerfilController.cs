@@ -64,7 +64,7 @@ namespace API.Controllers
 
         // PUT api/perfil/sincronizar-nombre
         [HttpPut("sincronizar-nombre")]
-        public async Task<IActionResult> SincronizarNombre([FromQuery] Perfil perfilACambiar)
+        public async Task<IActionResult> SincronizarNombre([FromBody] Perfil perfilACambiar)
         {
             using MySqlConnection conn = new MySqlConnection(_connString);
             await conn.OpenAsync();

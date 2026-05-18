@@ -143,8 +143,16 @@ namespace BGestionFAFA
 
         public static async Task ModificarNombre(Perfil perfilActual)
         {
-            await _http.PutAsJsonAsync($"{_urlBase}/usuario/sincronizar-nombre", perfilActual);
+            // Guardamos el resultado de la petición HTTP
+            HttpResponseMessage respuesta = await _http.PutAsJsonAsync($"{_urlBase}/usuario/sincronizar-nombre", perfilActual);
 
+            // Si el servidor responde con un código de error (como 400 o 500), esto lanzará una excepción
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                // Leemos el mensaje de error que configuraste en tu API (ej: "El nombre de usuario ya está registrado")
+                string mensajeError = await respuesta.Content.ReadAsStringAsync();
+                throw new Exception(mensajeError);
+            }
         }
 
         #endregion
