@@ -512,6 +512,51 @@ namespace BGestionFAFA
             return listaNormalizada;
         }
 
+        public static Logro ExtraerLogroPorId(int idLogro)
+        {
+
+            LogroSQL logroSQL;
+
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                logroSQL = conexion.Table<LogroSQL>().Where(l => l.IdLogro == idLogro).FirstOrDefault();
+            }
+
+            Logro logro = new Logro()
+            {
+                Nombre = logroSQL.Nombre,
+                XpPremio = logroSQL.XpPremio,
+            };
+
+            return logro;
+
+        }
+
+        public static List<Logro> ExtraerTodosLosLogros()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<LogroSQL>().ToList().Select(l => new Logro
+                {
+                    IdLogro = l.IdLogro,
+                    IdJuego = l.IdJuego,
+                    Nombre = l.Nombre,
+                    CondicionDesbloqueo = l.CondicionDesbloqueo,
+                    XpPremio = l.XpPremio
+                }).ToList();
+            }
+        }
+
+        public static List<int> ExtraerIdsLogrosPorPerfil(string perfilUid)
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<PerfilLogroSQL>()
+                               .Where(pl => pl.IdPerfil == perfilUid)
+                               .Select(pl => pl.IdLogro)
+                               .ToList();
+            }
+        }
 
 
         #endregion
@@ -577,53 +622,54 @@ namespace BGestionFAFA
                 }
             }
         }
-
-        public static Logro ExtraerLogroPorId(int idLogro)
-        {
-
-            LogroSQL logroSQL;
-
-            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
-            {
-                logroSQL = conexion.Table<LogroSQL>().Where(l => l.IdLogro == idLogro).FirstOrDefault();
-            }
-
-            Logro logro = new Logro()
-            {
-                Nombre = logroSQL.Nombre,
-                XpPremio = logroSQL.XpPremio,
-            };
-
-            return logro;
-
-        }
-
-        public static List<Logro> ExtraerTodosLosLogros()
+        public static void ActualizarNombrePerfilYUsuario(string nuevoNombre, Perfil perfilActual)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
-                return conexion.Table<LogroSQL>().ToList().Select(l => new Logro
+                // 1. Validar localmente que el nombre no lo tenga OTRA persona
+                bool yaExisteNombre = conexion.Table<PerfilSQL>()
+                                              .Where(p => p.NombreUsuario == nuevoNombre && p.PerfilUid != perfilActual.PerfilUid)
+                                              .Any();
+
+                if (yaExisteNombre)
                 {
-                    IdLogro = l.IdLogro,
-                    IdJuego = l.IdJuego,
-                    Nombre = l.Nombre,
-                    CondicionDesbloqueo = l.CondicionDesbloqueo,
-                    XpPremio = l.XpPremio
-                }).ToList();
+                    throw new Exception("ERROR: Este nombre de usuario ya está en uso por otro jugador.");
+                }
+
+                // 2. Buscar el Perfil local mediante su UID único
+                PerfilSQL perfilLocal = conexion.Table<PerfilSQL>()
+                                                .FirstOrDefault(p => p.PerfilUid == perfilActual.PerfilUid);
+
+                if (perfilLocal != null)
+                {
+                    perfilLocal.NombreUsuario = nuevoNombre;
+                    perfilLocal.Sincronizada = false; // <-- Así la API sabrá que debe subirlo a la nube
+
+                    conexion.Update(perfilLocal);
+                }
+                else
+                {
+                    throw new Exception("ERROR: No se encontró el perfil local para actualizar.");
+                }
+
+                // 3. Buscar el Usuario local mediante su IdUsuario
+                UsuarioSQL usuarioLocal = conexion.Table<UsuarioSQL>()
+                                                  .FirstOrDefault(u => u.IdUsuario == perfilActual.IdUsuario);
+
+                if (usuarioLocal != null)
+                {
+                    usuarioLocal.NombreUsuario = nuevoNombre;
+                    usuarioLocal.Sincronizada = false; // Marcamos también si tu lógica de sincronización monitoriza usuarios
+
+                    conexion.Update(usuarioLocal);
+                }
+                else
+                {
+                    throw new Exception("ERROR: No se encontró el usuario local asociado a este perfil.");
+                }
             }
         }
-
-        public static List<int> ExtraerIdsLogrosPorPerfil(string perfilUid)
-        {
-            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
-            {
-                return conexion.Table<PerfilLogroSQL>()
-                               .Where(pl => pl.IdPerfil == perfilUid)
-                               .Select(pl => pl.IdLogro)
-                               .ToList();
-            }
-        }
-
+     
 
         #endregion
 
@@ -683,6 +729,26 @@ namespace BGestionFAFA
                                }).ToList();
             }
         }
+
+        public static List<Usuario> ExtraerUsuariosPendientes()
+        {
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                return conexion.Table<UsuarioSQL>()
+                               .Where(u => u.Sincronizada == false)
+                               .ToList()
+                               .Select(p => new Usuario
+                               {
+                                   IdUsuario = p.IdUsuario,
+                                   NombreUsuario = p.NombreUsuario,
+                                   Email = p.Email,
+                                   Password = p.Password
+
+                               }).ToList();
+            }
+        }
+
+
 
         public static List<PerfilLogroSQL> ExtraerLogrosPendientes()
         {

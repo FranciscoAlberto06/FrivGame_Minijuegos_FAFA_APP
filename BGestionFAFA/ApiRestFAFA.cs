@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -91,6 +92,12 @@ namespace BGestionFAFA
             }
 
             return usu;
+        }
+
+
+        private static async Task SincronizarUsuarios(List<Usuario> usuarios)
+        {
+            await _http.PutAsJsonAsync($"{_urlBase}/usuario/sincronizar", usuarios);
         }
         #endregion
 
@@ -261,6 +268,10 @@ namespace BGestionFAFA
                             List<Perfil> perfiles = ApiSQLiteFAFA.ExtraerPerfilesPendientes();
                             await SincronizarPerfiles(perfiles);
                             break;
+                        case "Usuario":
+                            List<Usuario> usuarios = ApiSQLiteFAFA.ExtraerUsuariosPendientes();
+                            await SincronizarUsuarios(usuarios);
+                            break;
                         case "Logro":
                             List<PerfilLogroSQL> logros = ApiSQLiteFAFA.ExtraerLogrosPendientes();
                             await SincronizarLogros(logros);
@@ -283,6 +294,7 @@ namespace BGestionFAFA
                 System.Diagnostics.Debug.WriteLine($"Error sincronizando: {ex.Message}");
             }
         }
+
 
         public static async Task CargarDatosDesdeApi(string directorioTrabajo)
         {
@@ -339,12 +351,7 @@ namespace BGestionFAFA
             }
         }
 
-        public async static Task ModificarNombre(string nuevoNombre, Perfil perfil)
-        {
-            // Actualizamos el nombre del perfil y usuario en la nube a través de la API
-            await _http.PutAsJsonAsync($"{_urlBase}/perfil/modificar-nombre", perfil);
-
-        }
+      
         #endregion
     }
 }

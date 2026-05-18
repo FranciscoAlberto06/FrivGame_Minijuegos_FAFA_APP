@@ -134,14 +134,19 @@ namespace API.Controllers
             foreach (Usuario user in usuarios)
             {
                 string passHash = GenerarHash(user.Password);
-                string query = @"INSERT INTO USUARIO (username, email, password_hash) 
-                                 VALUES (@user, @email, @pass) 
-                                 ON DUPLICATE KEY UPDATE password_hash = @pass";
+
+                // Incluimos id_usuario en el INSERT para mantener la relación,
+                // y añadimos nombre_usuario en el UPDATE para que guarde el cambio de nombre.
+                string query = @"INSERT INTO USUARIO (id_usuario, nombre_usuario, email, password_hash) 
+                         VALUES (@id, @user, @email, @pass) 
+                         ON DUPLICATE KEY UPDATE nombre_usuario = @user, password_hash = @pass";
 
                 using MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@id", user.IdUsuario);
                 cmd.Parameters.AddWithValue("@user", user.NombreUsuario ?? "Usuario");
                 cmd.Parameters.AddWithValue("@email", user.Email);
                 cmd.Parameters.AddWithValue("@pass", passHash);
+
                 await cmd.ExecuteNonQueryAsync();
             }
             return Ok();

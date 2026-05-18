@@ -69,8 +69,15 @@ public partial class PerfilDetallePage : ContentPage
                 // Si no es nulo o vacio, actualizamos el nombre del perfil
                 if (!string.IsNullOrWhiteSpace(nuevoNombre))
                 {
-                    // TODO: Implementar la lógica para actualizar el nombre en la nube y localmente
-                    await ApiRestFAFA.ModificarNombre(nuevoNombre, perfilActual);
+                    // Guadamos en sqlite
+                    ApiSQLiteFAFA.ActualizarNombrePerfilYUsuario(nuevoNombre, perfilActual);
+
+                    // Y sincronizamos a la nube los cambiso
+                    await ApiRestFAFA.SincronizarHaciaApi("Perfil");
+                    await ApiRestFAFA.SincronizarHaciaApi("Usuario");
+
+                    await DisplayAlert("Éxito", "Nombre actualizado correctamente", "OK");
+
                 }
                 else
                 {
