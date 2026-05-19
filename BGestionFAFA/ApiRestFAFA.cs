@@ -260,7 +260,7 @@ namespace BGestionFAFA
             return juegos;
         }
         #endregion
-
+        
         #region SINCRONIZACION COMPLETA
         public static async Task SincronizarHaciaApi(string tipo)
         {

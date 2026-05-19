@@ -225,7 +225,7 @@ public partial class JuegoTopos : ContentPage
         // Si la puntuacion a sido mayor a 450 debloqueamos el logro correspondiente a dicho usuario
         if (int.Parse(lbPuntaje.Text.Replace("Puntos: ", "")) >= 450)
         {
-            await InsertarLogroUsuario(8);
+            await ProbarLogro(8);
         }
         #endregion
 
@@ -307,7 +307,7 @@ public partial class JuegoTopos : ContentPage
             nuevoPuntaje = puntosActuales + 20;
             #region LOGRO TOPO DORADOR
             // Si ha tocado el logro del topo dorado le insertamos pasandole el id del logro en especifico de este caso
-            await InsertarLogroUsuario(1);
+            await ProbarLogro(1);
             #endregion
         }
         else if (puntosActuales != 0) // Para que no sea negativo no se pierde punto estando en 0 
@@ -319,6 +319,7 @@ public partial class JuegoTopos : ContentPage
 
         // Actualización de la puntuacion inutil
         lbPuntaje.Text = "Puntos: " + nuevoPuntaje.ToString();
+
 
     }
 
@@ -373,26 +374,16 @@ public partial class JuegoTopos : ContentPage
 
     #region METODOS LOGROS
 
-    private async Task InsertarLogroUsuario(int idLogro)
+    private async Task ProbarLogro(int idlogro)
     {
-        // Comprobamos antes de nada si el usuario ya tiene el logro
-        if (!ApiSQLiteFAFA.ComprobarSiTieneElLogro(PerfilUidActual, idLogro))
+        bool mostrarLogro = await ApiSQLiteFAFA.InsertarLogroUsuario(idlogro, PerfilUidActual);
+
+        if (mostrarLogro)
         {
-            // Sino lo tiene lo insertamos
-            ApiSQLiteFAFA.InsertarPerfilLogro(PerfilUidActual, idLogro);
-
-            // Y si tiiene internet lo subimos a la nube el logro que ha debloqueado
-            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
-            {
-                await ApiRestFAFA.SincronizarHaciaApi("Logro");
-            }
-
-            // Mostramos el cartel del logro desbloqueado
-            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idLogro);
+            // Mostramos el cartel del logro desbloqueadoº
+            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idlogro);
             _ = cartelLogro.MostrarLogro(logro.Nombre, logro.XpPremio);
-
         }
-
     }
 
     #endregion

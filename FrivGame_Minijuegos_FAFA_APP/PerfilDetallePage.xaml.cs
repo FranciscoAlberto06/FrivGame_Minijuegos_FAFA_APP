@@ -11,7 +11,7 @@ public partial class PerfilDetallePage : ContentPage
     {
         "avatar1.png", "avatar2.png", "avatar3.png", "avatar4.png"
     };
-
+    int contadorLogros = 0;
     private Perfil perfilActual;
 
     public PerfilDetallePage(Perfil perfil)
@@ -169,7 +169,7 @@ public partial class PerfilDetallePage : ContentPage
 
                         await DisplayAlert("Éxito", "Contraseña actualizada correctamente. Por seguridad redigiremos al inicio de sesion. Muchas gracias por su paciencia", "OK");
 
-                        // Recargamos entrys
+                        // Recargamos entrys PUTO
                         TxtPassActual.Text = "";
                         TxtPassNueva1.Text = "";
                         TxtPassNueva2.Text = "";
@@ -225,6 +225,9 @@ public partial class PerfilDetallePage : ContentPage
             // 3. Creamos una tarjeta por cada logros con mas o menos opacidad segun si lo tiene desbloqeuado
             bool desbloqueado = logrosDesbloqueados.Contains(logro.IdLogro);
 
+            // Contamos lo logros para mostrarlo en las estadisticas del perfil
+            if (desbloqueado) contadorLogros++;
+
             Border tarjeta = new Border
             {
                 WidthRequest = 150,
@@ -276,6 +279,7 @@ public partial class PerfilDetallePage : ContentPage
             tarjeta.Content = contenido;
             listaLogros.Children.Add(tarjeta);
         }
+        lLogrosNum.Text = contadorLogros.ToString();
     }
 
 

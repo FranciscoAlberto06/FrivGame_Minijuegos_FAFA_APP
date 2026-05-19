@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text.Json;
 
@@ -21,6 +22,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private string UidPerfilActual; // Guarda el id del usuario que esta jugando ahora mismo
     private int idPartidaActual; // Guarda el id de la partida que se jueg en el momento
     private bool juegoGanado = false; // Para controlar si el juego ya se ha ganado o no
+    private Stopwatch _cronometroPartida = new Stopwatch(); // Un cronometro para medir el tiempo que tarda el usuario en resolver la partida
+    int segundosTardados; // segundo que acaba tardando
+    bool partidaFinalizad = false; // Para controlar si la partida ya se ha finalizado para no actualizar la partida varias veces al perder o ganar
     #endregion
 
     #region PROPIEDADES
@@ -61,33 +65,35 @@ public partial class AdivinarLaPalabra2 : ContentPage
     {
         InitializeComponent();
         UidPerfilActual = uIdPerfil;
+        juegoGanado = false;
 
-        ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
-        CrearTableroYPartida(); // Creamos el tablero adaptandose a la palabra objetivo
-        CrearTeclado(); // Creamos el teclado con sus botones y su funcionalidad
+        Comprobacion(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
+     
 
     }
 
     #region COMPROBACIONES INCIALES
-    private void ComprobarInternet()
+
+    private async void Comprobacion()
+    {
+        await ComprobarInternet();
+    }
+    private async Task ComprobarInternet()
     {
         // 1. Comprobamos el estado de la red
         NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
 
         //CargarPalabraOffline();
 
-        if (accesoRed == NetworkAccess.Internet)
-        {
-            // Si hay internet, ejecutamos el método online
-            //CargarPalabraOnline();
-            PalabraSecreta = ApiWordleFAFA.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
-        }
-        else
-        {
-            // Si no hay internet, ejecutamos el método offline
-            //CargarPalabraOffline();
-            PalabraSecreta = ApiWordleFAFA.CargarPalabraOffline();
-        }
+        // Si hay internet, ejecutamos el método online
+        //CargarPalabraOnline();
+        PalabraSecreta = await ApiWordleFAFA.ObtenerPalabraAleatoria(); // Quitamos los acentos de la palabra secreta para que no haya problemas al comparar con el intento del usuario
+        
+      
+
+        // 2. Ahora que 'PalabraSecreta' ya NO está vacía, creamos el tablero con sus columnas reales
+        CrearTableroYPartida();
+        CrearTeclado();
     }
     #endregion
 
@@ -165,6 +171,11 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
             BorrarUltimaLetra();
         }
+        else if (e.Key == (Windows.System.VirtualKey)192)
+        {
+            e.Handled = true;
+            await EscribirLetra("Ñ");
+        }  
         else if (key.Length == 1 && char.IsLetter(key[0]))
         {
             // Solo enviamos letras de la A a la Z
@@ -223,20 +234,9 @@ public partial class AdivinarLaPalabra2 : ContentPage
             }
         }
 
-        #region CREAR PARTIDA EN BD
-        Partida partidaNueva = new Partida()
-        {
-            IdJuego = 2, // El ID del juego de adivinar la palabra
-            IdPerfil = UidPerfilActual,
-            Victoria = false, // Por defecto la partida se crea como no ganada, y se actualizará a ganada si el usuario acierta la palabra
+        // Activamos el cronometro para medi el tiempo que tarda el usuario en resolver la partida o perderla, y poder puntuar en base a ese tiempo
+        _cronometroPartida.Start(); // Empezamos a contar el tiempo de la partida desde el momento en que se crea la partida en la base de datos, para medir el tiempo total que tarda el usuario en resolverla o perderla
 
-        };
-
-        // Insertamos la partida
-        idPartidaActual = ApiSQLiteFAFA.InsertarPartidaYDevolverIDPartida(partidaNueva); // Guardamos el ID de la partida actual para luego actualizarla al finalizar el juego
-
-
-        #endregion
 
     }
 
@@ -318,7 +318,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
 
     }
-#endregion
+    #endregion
 
     #region GESTION DE ACCIONES DE TECLADO
     public async void PresionarTecla(Button boton)
@@ -482,11 +482,14 @@ public partial class AdivinarLaPalabra2 : ContentPage
             // 2. Comprobar resultado final usando las propiedades y actualizando el Label de la interfaz
             if (IntentoPalabraActual == PalabraSecreta)
             {
+                _cronometroPartida.Stop(); // Paramos el cronometro al finalizar la partida para medir el tiempo que ha tardado el usuario en resolverla o perderla
+                segundosTardados = (int)_cronometroPartida.Elapsed.TotalSeconds; // Sacamos los segundos tardados
                 LabelMensaje.TextColor = Colors.Green;
                 KeyboardLayout.IsEnabled = false; // Deshabilitamos el teclado para que no pueda seguir escribiendo al haber ganado
                 ButtonReiniciar.IsVisible = true; // Hacemos visible el boton de reiniciar para que pueda volver a jugar
                 bSignificado.IsVisible = true; // Hacemos visible el boton de significado para que pueda consultar el significado de la palabra al haber ganado
-                juegoGanado = true; // Indicamos que el juego se ha ganado para luego actualizar la partida en la base de datos
+                juegoGanado = true; // Indicamos que el juego se ha ganado para luego actualizar la partida en la base de datos 
+                partidaFinalizad = true;
                 throw new Exception("¡ENHORABUENA! HAS ACERTADO!");
             }
             else
@@ -498,11 +501,14 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
                 if (FilaActual == 6)
                 {
+                    _cronometroPartida.Stop(); // Paramos el cronometro al finalizar la partida para medir el tiempo que ha tardado el usuario en resolverla o perderla
+                    segundosTardados = (int)_cronometroPartida.Elapsed.TotalSeconds; // Sacamos los segundos tardados
                     LabelMensaje.TextColor = Colors.Red;
                     KeyboardLayout.IsEnabled = false; // Deshabilitamos el teclado para que no pueda seguir escribiendo al haber ganado
                     ButtonReiniciar.IsVisible = true; // Hacemos visible el boton de reiniciar para que pueda volver a jugar
                     bSignificado.IsVisible = true;
                     juegoGanado = false; // Indicamos que el juego se ha perdido para luego actualizar la partida en la base de datos
+                    partidaFinalizad = true; // Indicamos que la partida ya se ha finalizado para no actualizar varias veces la partida al perder o ganar
                     throw new Exception("FIN DEL JUEGO. LA PALABRA ERA: " + PalabraSecreta);
 
 
@@ -517,18 +523,39 @@ public partial class AdivinarLaPalabra2 : ContentPage
         }
         catch (Exception error) {
 
+          
             LabelMensaje.Text = error.Message;
-            // Si hemos ganado la partida atualizamos la victoria de la partida
-            if (juegoGanado)
+            // Si hemos terminado la partida atualizamos la victoria de la partida
+            if (partidaFinalizad)
             {
-                ApiSQLiteFAFA.ActualizarPartidaAVictoria(idPartidaActual); // Actualizamos la partida a victoria si se ha ganado en sqlite
-            }
+               
+                Partida partidaNueva = new Partida()
+                {
+                    
+                    IdJuego = 2, // El ID del juego de adivinar la palabra
+                    IdPerfil = UidPerfilActual,
+                    Victoria = juegoGanado, 
+                    Puntuacion = juegoGanado ? CalcularPuntuacion(segundosTardados) : 0, // Si el juego se ha ganado calculamos la puntuación en base al tiempo, si se ha perdido la puntuación es 0
+                    TiempoSegundos = segundosTardados
+                };
 
-            // Subimos a AIVEN la partida si tenemos conexion a internet
-            if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
-            {
-                await ApiRestFAFA.SincronizarHaciaApi("Partida");
+                #region GESTION LOGRO
+                if (partidaNueva.Victoria == true && partidaNueva.TiempoSegundos < 60)
+                {
+                    // TODO: Implementar Logro de resolver la partida en menos de 1 minuto
 
+                }
+                #endregion
+
+                // Insertamos la partida
+                ApiSQLiteFAFA.InsertarPartida(partidaNueva);
+
+                // Subimos a AIVEN la partida si tenemos conexion a internet
+                if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+                {
+                    await ApiRestFAFA.SincronizarHaciaApi("Partida");
+
+                }
             }
 
 
@@ -553,8 +580,8 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     private void RecargarJuego(object sender, EventArgs e)
     {
-        ComprobarInternet(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
-        CrearTableroYPartida(); // Creamos el tablero adaptandose a la palabra objetivo
+
+        Comprobacion();
         // El teclado no hace falta volver a crearlo porque no cambia
         bSignificado.IsVisible = false; // Volvemos a ocultar el boton de significado para que no se vea en medio del juego
         ButtonReiniciar.IsVisible = false; // Volvemos a ocultar el boton de reiniciar para que no se vea en medio del juego
@@ -563,8 +590,36 @@ public partial class AdivinarLaPalabra2 : ContentPage
         ColActual = 0; // Reseteamos la columna actual para volver a empezar desde la primera columna
         IntentoPalabraActual = ""; // Reseteamos el intento actual para que no se quede guardada la palabra que se estaba escribiendo
         KeyboardLayout.IsEnabled = true; // Volvemos a habilitar el teclado para que se pueda escribir la nueva palabra al haber reiniciado el juego
+        juegoGanado = false; // Reseteamos la vistoria de antes
+        _cronometroPartida.Restart(); // Reiniciamos el cronometro para medir el tiempo de la nueva partida
     }
 
+    private int CalcularPuntuacion(int tiempoSegundos)
+    {
+
+        int puntuacionBase = 1; // 1 punto asegurado por ganar
+        int puntosExtrasPorTiempo = 0;
+
+        // 1 minutos = 60 segundos
+        // 3 minutos = 180 segundos
+        // 5 minutos = 300 segundos
+        if (tiempoSegundos < 60)
+        {
+            puntosExtrasPorTiempo = 3;
+        }
+        else if (tiempoSegundos < 180)
+        {
+            puntosExtrasPorTiempo = 2;
+        }
+        else if (tiempoSegundos < 300)
+        {
+            puntosExtrasPorTiempo = 1;
+        }
+
+        // Devolvemos la puntuación total sumando la puntuación base y los puntos extras por tiempo
+        return puntuacionBase + puntosExtrasPorTiempo;
+
+    }
 
 
 }

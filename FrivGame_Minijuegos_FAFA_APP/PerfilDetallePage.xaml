@@ -73,7 +73,7 @@
                     </VerticalStackLayout>
                     <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
                         <Label Text="LOGROS" TextColor="Crimson" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center"/>
-                        <Label Text="12" TextColor="Black" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
+                        <Label Text="0" TextColor="Black" x:Name="lLogrosNum" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center"/>
                     </VerticalStackLayout>
                     <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
                         <Label Text="RANGO" TextColor="Crimson" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center"/>

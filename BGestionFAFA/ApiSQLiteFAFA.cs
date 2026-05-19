@@ -476,18 +476,20 @@ namespace BGestionFAFA
                                                                       .ToList();
                     break;
                 case 2:
-                    // 1. Procesamos las partidas para calcular el balance de cada jugador
                     rankingMejoresMarcasJuego = todasLasPartidasDelJuego
-                        .GroupBy(p => p.IdPerfil)
-                        .Select(grupo => new PartidaSQL
-                        {
-                            IdPerfil = grupo.Key,
-                            // Sumamos 1 por victoria y restamos 1 por derrota, mínimo 0
-                            Puntuacion = Math.Max(0, grupo.Count(p => p.Victoria == true) - grupo.Count(p => p.Victoria == false)),
-                            IdJuego = 2
-                        })
-                        .OrderByDescending(p => p.Puntuacion)
-                        .ToList();
+                                                                      .Where(p => p.Victoria == true) // 1. Solo nos importan las partidas ganadas
+                                                                      .GroupBy(p => p.IdPerfil) // 2. Agrupamos por jugador
+                                                                      .Select(grupo => new PartidaSQL
+                                                                      {
+                                                                          IdPerfil = grupo.Key,
+                                                                          IdJuego = 2,
+                                                                          // 3. Sumamos todos los puntos acumulados que el jugador ha conseguido en sus victorias
+                                                                          Puntuacion = grupo.Sum(p => p.Puntuacion),
+                                                                          // Ponemos Victoria en true ya que este registro acumulado representa sus victorias
+                                                                          Victoria = true
+                                                                      })
+                                                                      .OrderByDescending(p => p.Puntuacion) // 4. Ordenamos el ranking de mayor a menor puntuación acumulada
+                                                                      .ToList();
 
 
                     break;
@@ -563,18 +565,19 @@ namespace BGestionFAFA
 
         #region METODOS DE ACTUALIZACION
         // Este metodo se usara para actualiazar a visotira cuando se gane una aprtida de wordle
-        public static void ActualizarPartidaAVictoria(int idPartidaActual)
+        public static void ActualizarPartidaAVictoria(int idPartidaActual, int puntuacionObtenida, int tiempoTardado)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
                 // 1. Buscamos la partida original que tiene tu IdPerfil
                 PartidaSQL partida = conexion.Table<PartidaSQL>().FirstOrDefault(x => x.IdPartida == idPartidaActual);
 
-                // 2. Si la encuentra, SOLO le cambiamos la victoria
+                // 2. Si la encuentra 
                 if (partida != null)
                 {
                     partida.Victoria = true;
-
+                    partida.Puntuacion = puntuacionObtenida;
+                    partida.TiempoSegundos = tiempoTardado;
                     // 3. Hacemos el Update del objeto entero, así no se borra tu IdPerfil
                     conexion.Update(partida);
                 }
@@ -881,6 +884,34 @@ namespace BGestionFAFA
 
         #endregion
 
+        #region LOGROS
+
+        public async static Task<bool> InsertarLogroUsuario(int idLogro, string UIdperfil)
+        {
+            bool loTiene = false;
+            // Comprobamos antes de nada si el usuario ya tiene el logro
+            if (!ApiSQLiteFAFA.ComprobarSiTieneElLogro(UIdperfil, idLogro))
+            {
+                // Sino lo tiene lo insertamos
+                ApiSQLiteFAFA.InsertarPerfilLogro(UIdperfil, idLogro);
+
+                // Y si tiiene internet lo subimos a la nube el logro que ha debloqueado
+                if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+                {
+                    await ApiRestFAFA.SincronizarHaciaApi("Logro");
+                }
+
+                // Si todo fue bien lo decimos
+                loTiene = true;
+
+
+            }
+            
+            return loTiene;
+
+        }
+
+        #endregion
         private static int ObtenerSiguienteIdNegativo(SQLiteConnection conexion)
         {
           

@@ -37,62 +37,51 @@ namespace BGestionFAFA
         }
 
         // 2. Descargamos y preparamos nuestra unica lista 
-        public static void InicializarDiccionario()
+        public async static Task InicializarDiccionario()
         {
-
-            // Inciamos el cliente y la URL de donde vamos a sacar el diccionario de palabras, que es un repositorio de GitHub
-            HttpClient cliente = new HttpClient();
-            string url = "https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt";
-
-            // Otro enlace que se puede usar, mas abajo lo que hay que añadir el foreach si se usa
-            //string url = "https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt";
-            // Este archivo viene como: "palabra 12345" 
-            // Nos quedamos solo con la parte de la palabra
-            //string palabraRaw = palabra.Split(' ')[0];
 
             try
             {
-                // Sacamos todas la palabras
-                string todasLasPalabras = cliente.GetStringAsync(url).Result;
-
-                // Incializamos la lista de palabras
+                // 1. Inicializamos la lista de palabras
                 listaPalabras = new List<string>();
 
-                // Separamos el texto en lineas, cada linea es una palabra, y eliminamos las lineas vacías
-                string[] lineas = todasLasPalabras.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);// \n es para los saltos de linea,
-                                                                                                              // \r es para los saltos de linea en windows que a veces se usan ambos caracteres, y
-                                                                                                              // RemoveEmptyEntries es para eliminar las lineas vacías que puedan haber
-
-                // Recorremos todas las palabras para limpiarla y añadirla a la lista solo si tiene entre 4 y 6 letras
-                foreach (string palabra in lineas)
+                // 2. Abrimos el archivo incrustado en Resources/Raw/diccionario.txt de manera local
+                using (Stream stream = await FileSystem.OpenAppPackageFileAsync("diccionario.txt"))
                 {
-
-                    // Filtramos para que entren a la lista las de 4 a 6 letras
-                    if (palabra.Length >= 4 && palabra.Length <= 6)
+                    using (StreamReader reader = new StreamReader(stream))
                     {
-                        // Formateamos la palabra adaptándola a nuestro formato 
-                        string palabraLimpia = QuitarAcentos(palabra);
+                        string linea;
+                        // Leemos línea por línea de manera eficiente
+                        while ((linea = await reader.ReadLineAsync()) != null)
+                        {
+                            // Reemplazamos cualquier residuo de salto de línea invisible antes de medir su longitud
+                            string palabra = linea.Replace("\r", "").Replace("\n", "").Trim();
 
-                        // Añadimos la palabra a la lista de palabras general
-                        listaPalabras.Add(palabraLimpia);
+                            // Ahora el filtro de longitud medirá los caracteres reales exactos
+                            if (palabra.Length >= 4 && palabra.Length <= 6)
+                            {
+                                string palabraLimpia = QuitarAcentos(palabra).ToUpper();
+                                listaPalabras.Add(palabraLimpia);
+                            }
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al descargar el diccionario: " + ex.Message);
+                // Si el archivo no se encuentra o está mal configurado saltará aquí
+                System.Diagnostics.Debug.WriteLine("Error al cargar el diccionario local: " + ex.Message);
             }
-
 
         }
 
         // Metodo para extraer una palabra aleatoria
-        public static string ObtenerPalabraAleatoria()
+        public async  static Task<string> ObtenerPalabraAleatoria()
         {// Solo descargamos si la lista está vacía
             if (listaPalabras == null || listaPalabras.Count == 0)
             {
                 // Cargamos nuestra lista de palabras sacadas de una fuente online 
-                InicializarDiccionario();
+                await InicializarDiccionario();
             }
 
 
