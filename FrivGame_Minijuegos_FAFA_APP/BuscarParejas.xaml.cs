@@ -1,17 +1,27 @@
+using BGestionFAFA;
+using BModelosFAFA;
+using System.Diagnostics;
+using System.Security.Cryptography;
+
 namespace FrivGame_Minijuegos_FAFA_APP;
 
 public partial class BuscarParejas : ContentPage    
 {
+    #region MIEMBROS PRIVADOS
     // Datos del juego
     ImageButton primeraCarta = null;
     int parejasEncontradas = 0;
     string temaActual = "";
-
+    private string PerfilUidActual; // Guarda el id del usuario que esta jugando ahora mismo
+    private Stopwatch _cronometroPartida = new Stopwatch(); // Un cronometro para medir el tiempo que tarda el usuario en resolver la partida
+    int segundosTardados; // segundo que acaba tardando
+    #endregion
 
     public BuscarParejas(string temaElegido, string uidPerfil)
     {
         InitializeComponent();
         temaActual = temaElegido;
+        PerfilUidActual = uidPerfil;
         CrearTablero();
     }
 
@@ -92,6 +102,9 @@ public partial class BuscarParejas : ContentPage
             }
 
         }
+
+        _cronometroPartida.Start(); // Empezamos a contar el tiempo desde que se crea el tablero, es decir, desde que el usuario puede empezar a jugar
+
     }
 
     private async void OnCartaClicked(object sender, EventArgs e)
@@ -145,8 +158,34 @@ public partial class BuscarParejas : ContentPage
                         // Cuando se encentre las 6 parejas, mostramos mensaje de victoria y el botón de reiniciar
                         if (parejasEncontradas == 6)
                         {
+                            _cronometroPartida.Stop(); // Paramos el cronometro al encontrar la ultima pareja
+                            segundosTardados = _cronometroPartida.Elapsed.Seconds; // Guardamos los segundos que ha tardado en resolver la partida
                             LblEstado.Text = "¡HAS GANADO!";
                             LblEstado.TextColor = Colors.Green;
+
+                            await ProbarLogro(4);
+                            #region GUARDADO EN BD
+
+                            // Preparamos partida
+                            Partida partidaNueva = new Partida
+                            {
+                                IdPerfil = PerfilUidActual,
+                                IdJuego = 3, // Id del juego de buscar parejas
+                                Puntuacion = CalcularPuntuacion(segundosTardados),
+                                Victoria = true,
+                                TiempoSegundos = segundosTardados,
+                            };
+
+                            // Mandamos al sqlite local
+                            ApiSQLiteFAFA.InsertarPartida(partidaNueva);
+
+                            // Si tenemos conexión a internet, mandamos a la nube la partida
+                            if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+                            {
+                                await ApiRestFAFA.SincronizarHaciaApi("Partida");
+                            }
+
+                            #endregion
 
                             // Mostramos el botón de reiniciar
                             bReiniciar.IsVisible = true;
@@ -192,7 +231,11 @@ public partial class BuscarParejas : ContentPage
 
     private void ReiniciarJuego(object sender, EventArgs e)
     {
-        GridTablero.Children.Clear(); // Limpiamos tablero si hay partida previa
+        // Limpiamos tablero si hay partida previa
+        GridTablero.Children.Clear(); 
+
+        // Reseteamos el cronometro para la nueva partida
+        _cronometroPartida.Reset(); 
 
         // Recargamos el tablero con el mismo tema
         CrearTablero();
@@ -203,5 +246,53 @@ public partial class BuscarParejas : ContentPage
         // Ocultamos el botón de reiniciar
         bReiniciar.IsVisible = false;
 
+
     }
+
+    #region GESTION DE PUNTUACION
+    private int CalcularPuntuacion(int tiempoSegundos)
+    {
+
+        int puntuacionBase = 1; // 1 punto asegurado por ganar
+        int puntosExtrasPorTiempo = 0;
+
+        // 25 segundos
+        // 1 minutos = 60 segundos
+        // 1,5 minutos = 90 segundos
+        if (tiempoSegundos < 25)
+        {
+            puntosExtrasPorTiempo = 3;
+        }
+        else if (tiempoSegundos < 60)
+        {
+            puntosExtrasPorTiempo = 2;
+        }
+        else if (tiempoSegundos < 90)
+        {
+            puntosExtrasPorTiempo = 1;
+        }
+        else if (tiempoSegundos >= 120) // Si tarda mas de 2 minutos no se le da ningun punto 
+        {
+            puntuacionBase = 0;
+        }
+
+        // Devolvemos la puntuación total sumando la puntuación base y los puntos extras por tiempo
+        return puntuacionBase + puntosExtrasPorTiempo;
+
+    }
+    #endregion
+
+    #region GESTIONAR LOGRO
+    private async Task ProbarLogro(int idlogro)
+    {
+        bool mostrarLogro = await ApiSQLiteFAFA.InsertarLogroUsuario(idlogro, PerfilUidActual);
+
+        if (mostrarLogro)
+        {
+            // Mostramos el cartel del logro desbloqueadoº
+            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idlogro);
+            _ = cartelLogro.MostrarLogro(logro.Nombre, logro.XpPremio);
+        }
+    }
+    #endregion
 }

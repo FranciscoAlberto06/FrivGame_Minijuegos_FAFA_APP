@@ -1,4 +1,7 @@
 
+
+using Plugin.Maui.Audio;
+
 namespace BViewsFAFA;
 
 public partial class ModeloCartelLogro : ContentView
@@ -35,12 +38,18 @@ public partial class ModeloCartelLogro : ContentView
                 bLogro.IsVisible = true;
                 bLogro.TranslationX = 60;
 
+                // Añadimos sonido al logro
+                IAudioPlayer player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("logro_musica.mp3"));
+
+                player.Play();
+
                 // 2. Animacion de entrada
                 await Task.WhenAll(
                     bLogro.FadeTo(1, 350),
                     bLogro.TranslateTo(0, 0, 350, Easing.CubicOut)
                 );
-
+             
+                
                 // 3. Barra de progreso animada
                 await barraProgreso.ScaleXTo(0, 2500, Easing.Linear);
 
@@ -49,6 +58,7 @@ public partial class ModeloCartelLogro : ContentView
                     bLogro.FadeTo(0, 350),
                     bLogro.TranslateTo(60, 0, 350, Easing.CubicIn)
                 );
+                player.Stop();
 
                 // 5. Reset para el siguiente logro
                 bLogro.IsVisible = false;

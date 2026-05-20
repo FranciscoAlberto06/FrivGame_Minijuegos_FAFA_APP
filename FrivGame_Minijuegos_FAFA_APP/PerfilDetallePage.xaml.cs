@@ -261,6 +261,7 @@ public partial class PerfilDetallePage : ContentPage
             contenido.Children.Add(new Label
             {
                 Text = logro.Nombre,
+                TextColor = Colors.Black,
                 FontAttributes = FontAttributes.Bold,
                 FontSize = 12,
                 HorizontalOptions = LayoutOptions.Center,

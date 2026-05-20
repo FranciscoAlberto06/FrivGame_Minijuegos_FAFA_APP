@@ -475,7 +475,7 @@ namespace BGestionFAFA
                                                                       .Take(250) // Nos quedamos solo con los 250 mejores
                                                                       .ToList();
                     break;
-                case 2:
+                case 2 or 3:
                     rankingMejoresMarcasJuego = todasLasPartidasDelJuego
                                                                       .Where(p => p.Victoria == true) // 1. Solo nos importan las partidas ganadas
                                                                       .GroupBy(p => p.IdPerfil) // 2. Agrupamos por jugador

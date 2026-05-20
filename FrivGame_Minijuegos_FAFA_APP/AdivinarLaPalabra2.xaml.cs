@@ -19,7 +19,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     private int _colActual = 0;
     private string _intentoActual = "";
     private Border[,] _celdas; // un array bidimensional para almacenar las celdas del tablero, cada celda es un Border que contiene un Label con la letra
-    private string UidPerfilActual; // Guarda el id del usuario que esta jugando ahora mismo
+    private string PerfilUidActual; // Guarda el id del usuario que esta jugando ahora mismo
     private int idPartidaActual; // Guarda el id de la partida que se jueg en el momento
     private bool juegoGanado = false; // Para controlar si el juego ya se ha ganado o no
     private Stopwatch _cronometroPartida = new Stopwatch(); // Un cronometro para medir el tiempo que tarda el usuario en resolver la partida
@@ -64,7 +64,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
     public AdivinarLaPalabra2(string uIdPerfil)
     {
         InitializeComponent();
-        UidPerfilActual = uIdPerfil;
+        PerfilUidActual = uIdPerfil;
         juegoGanado = false;
 
         Comprobacion(); // Comprobamos si hay conexion a internet para cargar la palabra de forma online o offline
@@ -533,7 +533,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 {
                     
                     IdJuego = 2, // El ID del juego de adivinar la palabra
-                    IdPerfil = UidPerfilActual,
+                    IdPerfil = PerfilUidActual,
                     Victoria = juegoGanado, 
                     Puntuacion = juegoGanado ? CalcularPuntuacion(segundosTardados) : 0, // Si el juego se ha ganado calculamos la puntuación en base al tiempo, si se ha perdido la puntuación es 0
                     TiempoSegundos = segundosTardados
@@ -543,6 +543,7 @@ public partial class AdivinarLaPalabra2 : ContentPage
                 if (partidaNueva.Victoria == true && partidaNueva.TiempoSegundos < 60)
                 {
                     // TODO: Implementar Logro de resolver la partida en menos de 1 minuto
+                    await ProbarLogro(2);
 
                 }
                 #endregion
@@ -576,6 +577,20 @@ public partial class AdivinarLaPalabra2 : ContentPage
 
     }
 
+    #endregion
+
+    #region GESTIONAR LOGRO
+    private async Task ProbarLogro(int idlogro)
+    {
+        bool mostrarLogro = await ApiSQLiteFAFA.InsertarLogroUsuario(idlogro, PerfilUidActual);
+
+        if (mostrarLogro)
+        {
+            // Mostramos el cartel del logro desbloqueadoº
+            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idlogro);
+            _ = cartelLogro.MostrarLogro(logro.Nombre, logro.XpPremio);
+        }
+    }
     #endregion
 
     private void RecargarJuego(object sender, EventArgs e)
