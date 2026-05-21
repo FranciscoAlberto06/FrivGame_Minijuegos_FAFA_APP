@@ -405,7 +405,15 @@ namespace BGestionFAFA
 
         public static async Task<List<PartidaSQL>> CargarPartidasPorJuegoDesdeNube(int idJuego)
         {
-            throw new NotImplementedException();
+            List<PartidaSQL> partidas;
+            HttpResponseMessage response = await _http.GetAsync($"{_urlBase}/partida/porjuego?idJuego={idJuego}");
+
+            if (response.IsSuccessStatusCode)
+                partidas = await response.Content.ReadFromJsonAsync<List<PartidaSQL>>();
+            else
+                partidas = new List<PartidaSQL>();
+
+            return partidas;
         }
 
 

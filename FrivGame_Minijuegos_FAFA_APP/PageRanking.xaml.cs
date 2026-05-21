@@ -100,18 +100,19 @@ public partial class PageRanking : ContentPage
         // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos mas recientes
         if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
         {
-            List<PartidaSQL> partidas = await ApiRestFAFA.CargarPartidasDesdeNube();
+            // Solo descargamos las partidas del juego seleccionado
+            List<PartidaSQL> partidas = await ApiRestFAFA.CargarPartidasPorJuegoDesdeNube(idJuego);
             ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
 
-            // tambien los perfiles por si es un usu nuevo que ha entrado en el ranking
+            // Solo descargamos perfiles si hay partidas nuevas
             List<Perfil> perfiles = await ApiRestFAFA.CargarPerfilesDesdeNube();
             ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
 
         }
-        // 1. Extraemos las mejores marcas usando el método de la API
+        // 2. Extraemos las mejores marcas usando el método de la API
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 
-        // 2. Procesamos la lista para aplicar colores de resaltado
+        // 3. Procesamos la lista para aplicar colores de resaltado
         foreach (Partida partida in listaRankings)
         {
             partida.NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(partida.IdPerfil);
@@ -128,7 +129,7 @@ public partial class PageRanking : ContentPage
             }
         }
 
-        // 3. Mandamos la lista al CollectionView
+        // 4. Mandamos la lista al CollectionView
         miCollectionView.ItemsSource = listaRankings;
     }
 

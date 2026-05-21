@@ -251,7 +251,7 @@ public partial class _2048game : ContentPage
     private async void AnimacionAparecerFicha(int fila, int col)
     {
         Border border = listaBorders[fila, col];
-        // Animación sencilla: Escalar arriba y luego volver a la normalidad
+        // Animación que escala arriba y luego volver a la normalidad
         await border.ScaleTo(1.2, 100, Easing.CubicOut);
         await border.ScaleTo(1.0, 100, Easing.CubicIn);
 
@@ -325,9 +325,11 @@ public partial class _2048game : ContentPage
                 break;
             case 1024:
                 color = Color.FromArgb("#EB459E"); // Rosa/Fucsia
+                ProbarLogro(6); // Logro de llegar a 1024
                 break;
             case 2048:
                 color = Color.FromArgb("#FFD700"); // Dorado 
+                ProbarLogro(7); // Logro de llegar a 2048
                 break;
             default:
                 color = Color.FromArgb("#9B59B6"); // Púurpura (Si son mayores a 2048)
@@ -573,6 +575,20 @@ public partial class _2048game : ContentPage
         }
 
         return cambioRealizado;
+    }
+    #endregion
+
+    #region GESTIONAR LOGRO
+    private async Task ProbarLogro(int idlogro)
+    {
+        bool mostrarLogro = await ApiSQLiteFAFA.InsertarLogroUsuario(idlogro, PerfilUidActual);
+
+        if (mostrarLogro)
+        {
+            // Mostramos el cartel del logro desbloqueadoº
+            Logro logro = ApiSQLiteFAFA.ExtraerLogroPorId(idlogro);
+            _ = cartelLogro.MostrarLogro(logro.Nombre, logro.XpPremio);
+        }
     }
     #endregion
 
