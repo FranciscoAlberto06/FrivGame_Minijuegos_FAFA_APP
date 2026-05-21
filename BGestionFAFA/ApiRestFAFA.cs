@@ -403,6 +403,11 @@ namespace BGestionFAFA
             }
         }
 
+        public static async Task<List<PartidaSQL>> CargarPartidasPorJuegoDesdeNube(int idJuego)
+        {
+            throw new NotImplementedException();
+        }
+
 
         #endregion
     }
