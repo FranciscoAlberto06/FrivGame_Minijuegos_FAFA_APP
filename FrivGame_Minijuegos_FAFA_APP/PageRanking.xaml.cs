@@ -17,7 +17,7 @@ public partial class PageRanking : ContentPage
 	{
 		InitializeComponent();
         uIdPerfilActual = uIdPerfil;
-        CargarSelectorJuegos();
+    
     }
 
 
@@ -43,8 +43,9 @@ public partial class PageRanking : ContentPage
             int indice = pickerJuegos.SelectedIndex;
             if (indice != -1 && listaJuegos[indice].IdJuego == idJuego)
             {
-                MainThread.BeginInvokeOnMainThread(() =>
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
+                    await ApiRestFAFA.CargarPartidasPorJuegoDesdeNube(idJuego);
                     ActualizarRanking(idJuego);
                 });
             }
@@ -61,6 +62,12 @@ public partial class PageRanking : ContentPage
         {
             System.Diagnostics.Debug.WriteLine($"Error SignalR: {ex.Message}");
         }
+
+        CargarSelectorJuegos();
+        Task.Run(async () =>
+        {
+            await CargarPartidasNuevas();
+        });
     }
 
     protected override async void OnDisappearing()
@@ -72,7 +79,7 @@ public partial class PageRanking : ContentPage
     }
     #endregion
 
-    private void CargarSelectorJuegos()
+    private async void CargarSelectorJuegos()
     {
         // 1. Sacamos de la bd los juegos disponibles 
         listaJuegos = ApiSQLiteFAFA.ExtraerTodosLosJuegos();
@@ -82,6 +89,23 @@ public partial class PageRanking : ContentPage
 
         // 3. Seleccionamos el primero por defecto, esto activara el evento de cambio y cargara el ranking del primer juego
         pickerJuegos.SelectedIndex = 0;
+
+
+    }
+
+    private async Task CargarPartidasNuevas()
+    {
+        // 2. Si tenemos internet, cargamos de la nube y refrescamos, esto nos asegura que el ranking este actualizado con los datos de otros usuarios
+        if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+        {
+            // 2.2 Cargamos de la nube las partidas del juego seleccionados
+            List<PartidaSQL> partidas = await ApiRestFAFA.CargarPartidasDesdeNube();
+            ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
+
+            List<Perfil> perfiles = await ApiRestFAFA.CargarPerfilesDesdeNube();
+            ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
+
+        }
     }
 
     private void OnJuegoCambiado(object sender, EventArgs e)
@@ -97,41 +121,24 @@ public partial class PageRanking : ContentPage
 
     private async void ActualizarRanking(int idJuego)
     {
-        // 1. Recargarmo el sqlite primero para asegurarnos de tener los datos mas recientes
-        if(Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
-        {
-            // Solo descargamos las partidas del juego seleccionado
-            List<PartidaSQL> partidas = await ApiRestFAFA.CargarPartidasPorJuegoDesdeNube(idJuego);
-            ApiSQLiteFAFA.GuardarPartidasEnLocal(partidas);
 
-            // Solo descargamos perfiles si hay partidas nuevas
-            List<Perfil> perfiles = await ApiRestFAFA.CargarPerfilesDesdeNube();
-            ApiSQLiteFAFA.GuardarPerfilesEnLocal(perfiles);
-
-        }
-        // 2. Extraemos las mejores marcas usando el método de la API
+        // 1. Cargamos lo que tengamos en local para ese juego
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 
-        // 3. Procesamos la lista para aplicar colores de resaltado
+        // 2. Cargamos las puntuacion de cada usuario
         foreach (Partida partida in listaRankings)
         {
             partida.NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(partida.IdPerfil);
-
-            if (partida.IdPerfil == uIdPerfilActual)
-            {
-                // Si soy yo: Fondo rojo oscuro y borde carmesí
-                partida.ColorFondoRanking = "#3A0000";
-            }
-            else
-            {
-                // Si es otro: Fondo gris oscuro y sin borde
-                partida.ColorFondoRanking = "#252525";
-            }
+            partida.ColorFondoRanking = partida.IdPerfil == uIdPerfilActual ? "#3A0000" : "#252525";
         }
 
-        // 4. Mandamos la lista al CollectionView
+        // 3. Asignamos a la vista
         miCollectionView.ItemsSource = listaRankings;
+
+    
     }
+
+   
 
     private async void OnVolverClicked(object sender, EventArgs e)
     {

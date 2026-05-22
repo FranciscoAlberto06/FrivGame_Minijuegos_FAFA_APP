@@ -12,81 +12,113 @@ public partial class PageInicioSesion : ContentPage
     public PageInicioSesion()
 	{
 		InitializeComponent();
-		AnimacionInicio();
-        CargarBD();
-	}
-
-    private async void CargarBD()
-    {
-   
-   
-        // Cargamos la rutas y creamos si es necesario los archivos sqlite si es nuevo dispositivo
-        ApiSQLiteFAFA.ComprobarRutasSQL(FileSystem.AppDataDirectory);
-
-        // TODO: Para cuando hagamosla parte de la nube
-        //Comprobamos el estado de la red
-        NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
-
-        // Si tenemos conexion a internet actualizamos datos nuevo que hubiera en la nube
-        if (accesoRed == NetworkAccess.Internet)
+        #region Metodos Inciales 
+        AnimacionInicio();
+        // Dejamos cargando los datos en un hilo aparte, y asin rinde mejor
+        Task.Run(async () =>
         {
-            #region CARGAR DATOS DE LA NUBE
-            await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
-            await ApiRestFAFA.SincronizarHaciaApi("Todo");
-            #endregion
+            await CargarBD();
+        });
+        #endregion
+    }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        
+
+    }
+
+    private async Task CargarBD()
+    {
+        try
+        {
+            // Cargamos la rutas y creamos si es necesario los archivos sqlite si es nuevo dispositivo
+            ApiSQLiteFAFA.ComprobarRutasSQL(FileSystem.AppDataDirectory);
+
+            // TODO: Para cuando hagamosla parte de la nube
+            //Comprobamos el estado de la red
+            NetworkAccess accesoRed = Connectivity.Current.NetworkAccess;
+
+            // Si tenemos conexion a internet actualizamos datos nuevo que hubiera en la nube
+            if (accesoRed == NetworkAccess.Internet)
+            {
+                #region CARGAR DATOS DE LA NUBE
+                await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
+                await ApiRestFAFA.SincronizarHaciaApi("Todo");
+                #endregion
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error al cargar BD: {ex.Message}");
         }
 
 
 
-    }
+        }
 
     private async void AnimacionInicio()
     {
-        // 1. ESTADO INICIAL
-        LoginContainer.Opacity = 0;
-        LoginContainer.IsVisible = false;
+        IAudioPlayer player = null;
 
-        LogoImage.Scale = 0.5; // Empezamos un poco mas grande para que no sea desde la nada
-        LogoImage.Opacity = 0;
+        try
+        {
+            // 1. ESTADO INICIAL
+            LoginContainer.Opacity = 0;
+            LoginContainer.IsVisible = false;
+            SplashContainer.IsVisible = true;
 
-        // 2. ESPERAR UN SEGUNDO
-        await Task.Delay(1000);
-        // Preparamos nuestra musica a poner
-        // Hemos usado el nudget llamado  Plugin.Maui.Audio
-        IAudioPlayer player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("boing_musica.mp3"));
- 
+            LogoImage.Scale = 0.5;
+            LogoImage.Opacity = 0;
 
-        // 3. APARECER Y REBOTAR
+            await Task.Delay(1000);
 
-        // Primero le damos opacidad para que se ve
-        await LogoImage.FadeTo(1, 200);
-        player.Play();
-        // Despues lo agrandomos un poco más de lo normal 
-        await LogoImage.ScaleTo(1.9, 400);
+            // 2. MUSICA
+            player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("boing_musica.mp3"));
 
-        // Y despues lo volvemos a su tamaño normal para dar un efecto de rebote
-        await LogoImage.ScaleTo(1.0, 400);
+            // 3. APARECER Y REBOTAR
+            await LogoImage.FadeTo(1, 200);
+            player.Play();
 
-        // 4. SE PARA OTRO SEGUNDO
-        player.Stop();
-        await Task.Delay(1000);
+            await LogoImage.ScaleTo(1.9, 400);
+            await LogoImage.ScaleTo(1.0, 400);
 
-        // 5. DESAPARECER LENTAMENTE
-        await LogoImage.FadeTo(0, 600);
-        await SplashContainer.FadeTo(0, 400);
+            // 4. PARAR
+            player.Stop();
+            await Task.Delay(1000);
 
-        SplashContainer.IsVisible = false;
+            // 5. DESAPARECER
+            await LogoImage.FadeTo(0, 600);
+            await SplashContainer.FadeTo(0, 400);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error en animación: {ex.Message}");
+        }
+        finally
+        {
+   
+            if (player != null)
+            {
+                player.Dispose(); // Liberamos la memoria del audio
+            }
 
-        // 6. MOSTRAR EL LOGIN
-        LoginContainer.IsVisible = true;
-        await LoginContainer.FadeTo(1, 800);
+            SplashContainer.IsVisible = false;
+            SplashContainer.InputTransparent = true;
+
+            LoginContainer.IsVisible = true;
+            await LoginContainer.FadeTo(1, 800);
+        }
     }
 
     private async void botonInicio(object sender, EventArgs e)
     {
         bool errorEncontrado = false;
         int idUsuario = -1;
-        string passwordParaValidar = ""; // Aquí guardaremos o la real (local) o el Hash (nube)        
+        string passwordParaValidar = ""; // Aquí guardaremos la contraseña hash para validar                                    
+        bInicio.IsEnabled = false; // Deshabilitar botón para evitar doble clic
+
         try
         {
             // 1. Validar campos vacíos antes de ir a la DB
@@ -157,6 +189,8 @@ public partial class PageInicioSesion : ContentPage
         }
         finally
         {
+            bInicio.IsEnabled = true; // Reactivamos el botón
+
             if (!errorEncontrado)
             {
                 // Limpiamos entrys
@@ -176,6 +210,9 @@ public partial class PageInicioSesion : ContentPage
                 lError.IsVisible = false;  // Ocultamos mensaje de error por si volvemos
 
                 await Navigation.PushAsync(new MenuJuegos(idUsuario));
+
+                eEmail.Text = "";
+                ePassword.Text = "";
 
             }
 

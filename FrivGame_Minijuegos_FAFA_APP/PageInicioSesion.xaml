@@ -17,7 +17,8 @@
 
         <Grid x:Name="SplashContainer"
               Opacity="1"
-              ZIndex="2">
+              ZIndex="2"
+               >
 
             <Image
                 x:Name="LogoImage"
