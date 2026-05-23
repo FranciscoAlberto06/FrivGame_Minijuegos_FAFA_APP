@@ -39,7 +39,7 @@
                 </Border>
 
                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                    <Label Text="{Binding NombreUsuario}" FontSize="20" FontAttributes="Bold" TextColor="White"/>
+                    <Label Text="{Binding NombreUsuario}" FontSize="20" FontAttributes="Bold" TextColor="White"  LineBreakMode="TailTruncation"/>
                     <Label Text="JUGADOR ACTIVO" FontSize="11" TextColor="#888888" Margin="0,-2,0,0"/>
                 </VerticalStackLayout>
 

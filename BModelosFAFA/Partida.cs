@@ -20,6 +20,8 @@ namespace BModelosFAFA
 
 
         public string? ColorFondoRanking { get; set; }
+        public string? PuestoRanking { get; set; }
+
 
     }
 }

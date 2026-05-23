@@ -71,8 +71,10 @@
 
                         <Grid ColumnDefinitions="40, *, Auto">
 
-                            <Label Text="🏆" FontSize="22" VerticalOptions="Center" HorizontalOptions="Center"/>
-
+                            <Label Text="{Binding PuestoRanking}"
+                                   FontSize="22"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"/>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Margin="15,0">
                                 <Label Text="{Binding NombreUsuario, StringFormat='Jugador: {0}'}" 
                                        TextColor="White" 

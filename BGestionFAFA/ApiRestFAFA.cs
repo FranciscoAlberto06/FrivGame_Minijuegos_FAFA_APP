@@ -144,7 +144,7 @@ namespace BGestionFAFA
         public static async Task ModificarNombre(Perfil perfilActual)
         {
             // Guardamos el resultado de la petición HTTP
-            HttpResponseMessage respuesta = await _http.PutAsJsonAsync($"{_urlBase}/usuario/sincronizar-nombre", perfilActual);
+            HttpResponseMessage respuesta = await _http.PutAsJsonAsync($"{_urlBase}/perfil/sincronizar-nombre", perfilActual);
 
             // Si el servidor responde con un código de error (como 400 o 500), esto lanzará una excepción
             if (!respuesta.IsSuccessStatusCode)
@@ -153,6 +153,9 @@ namespace BGestionFAFA
                 string mensajeError = await respuesta.Content.ReadAsStringAsync();
                 throw new Exception(mensajeError);
             }
+
+            // Actualizamos en sqlite local este perfil
+            ApiSQLiteFAFA.ActualizarNombrePerfilEnLocal(perfilActual);
         }
 
         #endregion
@@ -418,12 +421,18 @@ namespace BGestionFAFA
 
         public static async Task ModificarAvatar(Perfil perfilActual)
         {
+            // 1. Guardamos el nuevo avatar en la API por PUT
             HttpResponseMessage respuesta = await _http.PutAsJsonAsync($"{_urlBase}/perfil/sincronizar-avatar", perfilActual);
 
             string contenido = await respuesta.Content.ReadAsStringAsync();
 
+            // 2. Si el servidor responde con un código de error (como 400 o 500), esto lanzará una excepción
             if (!respuesta.IsSuccessStatusCode)
                 throw new Exception(contenido.Trim('"'));
+
+            // Actualizamos en sqlite local este perfil
+            ApiSQLiteFAFA.ActualizarAvatarPerfilEnLocal(perfilActual);
+
         }
 
 

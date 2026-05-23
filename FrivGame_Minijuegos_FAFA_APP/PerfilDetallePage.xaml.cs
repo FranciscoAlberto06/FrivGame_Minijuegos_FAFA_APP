@@ -69,7 +69,7 @@ public partial class PerfilDetallePage : ContentPage
                 // Si no es nulo o vacio, actualizamos el nombre del perfil
                 if (!string.IsNullOrWhiteSpace(nuevoNombre))
                 {
-                    perfilActual.NombreUsuario = nuevoNombre;
+                    // Intentamos modificar el nombre 
                     await ApiRestFAFA.ModificarNombre(perfilActual);
 
                     // Actualizamos el binding visual
@@ -114,6 +114,7 @@ public partial class PerfilDetallePage : ContentPage
 
             // Llamamos a la API para actualizar el avatar
             await ApiRestFAFA.ModificarAvatar(perfilActual);
+
 
             // Actualizamos visual
             this.BindingContext = null;
@@ -204,9 +205,12 @@ public partial class PerfilDetallePage : ContentPage
 
         if (respuesta)
         {
+
             // Cerramos lo que tenemos abierto
             await Navigation.PopModalAsync();
 
+            // Borramos el usuario guardado
+            Preferences.Remove("idUsuarioIniciado");
             // En la app shell tenemos el login como la pgian raiz llamamemos a este y no a page Inicio sesion porque da problema mostrando el titulo de la paginga y arruina el diseño
             Application.Current.MainPage = new AppShell();
 

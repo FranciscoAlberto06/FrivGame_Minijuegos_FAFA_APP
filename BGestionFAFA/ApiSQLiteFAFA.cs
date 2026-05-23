@@ -625,54 +625,45 @@ namespace BGestionFAFA
                 }
             }
         }
-        public static void ActualizarNombrePerfilYUsuario(string nuevoNombre, Perfil perfilActual)
+        public static void ActualizarNombrePerfilEnLocal(Perfil perfil)
         {
             using (conexion = new SQLiteConnection(rutaCompletaPersonal))
             {
-                // 1. Validar localmente que el nombre no lo tenga OTRA persona
-                bool yaExisteNombre = conexion.Table<PerfilSQL>()
-                                              .Where(p => p.NombreUsuario == nuevoNombre && p.PerfilUid != perfilActual.PerfilUid)
-                                              .Any();
-
-                if (yaExisteNombre)
+                PerfilSQL perfilSQL = conexion.Table<PerfilSQL>()
+                                              .FirstOrDefault(p => p.PerfilUid == perfil.PerfilUid);
+                if (perfilSQL != null)
                 {
-                    throw new Exception("ERROR: Este nombre de usuario ya está en uso por otro jugador.");
+                    perfilSQL.NombreUsuario = perfil.NombreUsuario;
+                    conexion.Update(perfilSQL);
                 }
 
-                // 2. Buscar el Perfil local mediante su UID único
-                PerfilSQL perfilLocal = conexion.Table<PerfilSQL>()
-                                                .FirstOrDefault(p => p.PerfilUid == perfilActual.PerfilUid);
-
-                if (perfilLocal != null)
+                // También actualizamos en la tabla usuario
+                UsuarioSQL usuarioSQL = conexion.Table<UsuarioSQL>()
+                                                .FirstOrDefault(u => u.IdUsuario == perfil.IdUsuario);
+                if (usuarioSQL != null)
                 {
-                    perfilLocal.NombreUsuario = nuevoNombre;
-                    perfilLocal.Sincronizada = false; // Así la API sabrá que debe subirlo a la nube
-
-                    conexion.Update(perfilLocal);
-                }
-                else
-                {
-                    throw new Exception("ERROR: No se encontró el perfil local para actualizar.");
-                }
-
-                // 3. Buscar el Usuario local mediante su IdUsuario
-                UsuarioSQL usuarioLocal = conexion.Table<UsuarioSQL>()
-                                                  .FirstOrDefault(u => u.IdUsuario == perfilActual.IdUsuario);
-
-                if (usuarioLocal != null)
-                {
-                    usuarioLocal.NombreUsuario = nuevoNombre;
-                    usuarioLocal.Sincronizada = false; // Marcamos también 
-
-                    conexion.Update(usuarioLocal);
-                }
-                else
-                {
-                    throw new Exception("ERROR: No se encontró el usuario local asociado a este perfil.");
+                    usuarioSQL.NombreUsuario = perfil.NombreUsuario;
+                    conexion.Update(usuarioSQL);
                 }
             }
         }
-     
+        public static void ActualizarAvatarPerfilEnLocal(Perfil perfil)
+        {
+            // 1. Abrimos conexion
+            using (conexion = new SQLiteConnection(rutaCompletaPersonal))
+            {
+                // 2. Buscamos el perfil asociado a ese ID de usuario
+                PerfilSQL perfilSQL = conexion.Table<PerfilSQL>()
+                                              .FirstOrDefault(p => p.PerfilUid == perfil.PerfilUid);
+                // 3. Si lo encontramos, actualizamos su AvatarUrl
+                if (perfilSQL != null)
+                {
+                    perfilSQL.AvatarUrl = perfil.AvatarUrl;
+                    conexion.Update(perfilSQL);
+                }
+
+            }
+        }
 
         #endregion
 

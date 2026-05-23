@@ -12,20 +12,33 @@ public partial class PageInicioSesion : ContentPage
     public PageInicioSesion()
 	{
 		InitializeComponent();
+    
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
         #region Metodos Inciales 
-        AnimacionInicio();
+        await AnimacionInicio();
         // Dejamos cargando los datos en un hilo aparte, y asin rinde mejor
         Task.Run(async () =>
         {
             await CargarBD();
         });
-        #endregion
-    }
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
 
-        
+        // Comprobamos si hay un usuario guardado
+        int idGuardado = Preferences.Get("idUsuarioIniciado", 0);
+
+        if (idGuardado != 0)
+        {
+            // Si hay usuario guardado navegamos directamente al menu
+            await Navigation.PushAsync(new MenuJuegos(idGuardado));
+        }
+
+        #endregion
+
+
+
 
     }
 
@@ -58,7 +71,7 @@ public partial class PageInicioSesion : ContentPage
 
         }
 
-    private async void AnimacionInicio()
+    private async Task AnimacionInicio()
     {
         IAudioPlayer player = null;
 
@@ -91,6 +104,9 @@ public partial class PageInicioSesion : ContentPage
             // 5. DESAPARECER
             await LogoImage.FadeTo(0, 600);
             await SplashContainer.FadeTo(0, 400);
+
+
+
         }
         catch (Exception ex)
         {
@@ -174,6 +190,9 @@ public partial class PageInicioSesion : ContentPage
                 {
                     throw new Exception("Contraseña incorrecta.");
                 }
+
+
+
             }
 
 
@@ -203,6 +222,9 @@ public partial class PageInicioSesion : ContentPage
                 // Mostramos mensaje de que todo salio bien
                 lError.Text = "Todo Correcto. Iniciando.....";
                 lError.TextColor = Colors.Green;
+
+                // Guardamos el ID del usuario iniciado
+                Preferences.Set("idUsuarioIniciado", idUsuario);
 
                 // Esperamos 2 s y navegamos
                 await Task.Delay(2000);

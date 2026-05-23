@@ -126,10 +126,18 @@ public partial class PageRanking : ContentPage
         List<Partida> listaRankings = ApiSQLiteFAFA.ExtraerrMejoresMarcasPorJuego(idJuego);
 
         // 2. Cargamos las puntuacion de cada usuario
-        foreach (Partida partida in listaRankings)
+        for (int i = 0; i < listaRankings.Count();i++)
         {
-            partida.NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(partida.IdPerfil);
-            partida.ColorFondoRanking = partida.IdPerfil == uIdPerfilActual ? "#3A0000" : "#252525";
+            listaRankings[i].NombreUsuario = ApiSQLiteFAFA.ExtraerNombrePerfilPorIdPerfil(listaRankings[i].IdPerfil);
+            listaRankings[i].ColorFondoRanking = listaRankings[i].IdPerfil == uIdPerfilActual ? "#3A0000" : "#252525";
+            if (i == 0)
+                listaRankings[i].PuestoRanking = "🥇";
+            else if (i == 1)
+                listaRankings[i].PuestoRanking = "🥈";
+            else if (i == 2)
+                listaRankings[i].PuestoRanking = "🥉";
+            else
+                listaRankings[i].PuestoRanking = "🏆";
         }
 
         // 3. Asignamos a la vista
