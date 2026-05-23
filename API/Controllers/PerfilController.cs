@@ -90,8 +90,7 @@ namespace API.Controllers
                     }
                 }
 
-                // 3. Si el nombre está libre, actualizamos la tabla USUARIO (Padre)
-                // (Nota: Asegúrate de si tu columna en MySQL es 'username' o 'nombre_usuario')
+                // 3. Si el nombre está libre, actualizamos la tabla USUARIO 
                 string sqlUsuario = "UPDATE USUARIO SET username = @nom WHERE id_usuario = @id";
                 using (MySqlCommand cmdUsuario = new MySqlCommand(sqlUsuario, conn, trans))
                 {
@@ -148,6 +147,29 @@ namespace API.Controllers
             return Ok(perfiles);
         }
 
-    
+
+        // PUT api/perfil/sincronizar-avatar
+        [HttpPut("sincronizar-avatar")]
+        public async Task<IActionResult> SincronizarAvatar([FromBody] Perfil perfil)
+        {
+            try
+            {
+                using MySqlConnection conn = new MySqlConnection(_connString);
+                await conn.OpenAsync();
+
+                string sql = "UPDATE PERFIL SET avatar_url = @ava WHERE perfil_uid = @uid";
+                using MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@ava", perfil.AvatarUrl);
+                cmd.Parameters.AddWithValue("@uid", perfil.PerfilUid);
+                await cmd.ExecuteNonQueryAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
     }
 }

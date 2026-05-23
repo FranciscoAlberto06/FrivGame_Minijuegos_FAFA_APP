@@ -416,6 +416,16 @@ namespace BGestionFAFA
             return partidas;
         }
 
+        public static async Task ModificarAvatar(Perfil perfilActual)
+        {
+            HttpResponseMessage respuesta = await _http.PutAsJsonAsync($"{_urlBase}/perfil/sincronizar-avatar", perfilActual);
+
+            string contenido = await respuesta.Content.ReadAsStringAsync();
+
+            if (!respuesta.IsSuccessStatusCode)
+                throw new Exception(contenido.Trim('"'));
+        }
+
 
         #endregion
     }

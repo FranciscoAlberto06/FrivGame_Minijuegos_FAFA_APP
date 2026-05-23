@@ -69,10 +69,12 @@ public partial class PerfilDetallePage : ContentPage
                 // Si no es nulo o vacio, actualizamos el nombre del perfil
                 if (!string.IsNullOrWhiteSpace(nuevoNombre))
                 {
-                    //perfilActual.NombreUsuario = nuevoNombre;
-                    //await ApiRestFAFA.ModificarNombre(perfilActual);
+                    perfilActual.NombreUsuario = nuevoNombre;
+                    await ApiRestFAFA.ModificarNombre(perfilActual);
 
-                    //await ApiRestFAFA.CargarDatosDesdeApi(FileSystem.AppDataDirectory);
+                    // Actualizamos el binding visual
+                    this.BindingContext = null;
+                    this.BindingContext = perfilActual;
 
 
 
@@ -101,26 +103,26 @@ public partial class PerfilDetallePage : ContentPage
 
     }
 
-    private void OnAvatarSeleccionado(object sender, SelectionChangedEventArgs e)
+    private async void OnAvatarSeleccionado(object sender, SelectionChangedEventArgs e)
     {
         if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
         {
-            // Sacamos el perfil actual 
-            Perfil perfil = (Perfil)this.BindingContext;
-            // Sacamos el nombre del avata selecionado
-            perfil.AvatarUrl = (string)e.CurrentSelection.FirstOrDefault();
+            string avatarElegido = e.CurrentSelection.FirstOrDefault()?.ToString();
+            if (avatarElegido == null) return;
 
-            // TODO: Llamar a api para actualizar el avatar en la nube y localmente
-            //ApiRestFAFA.ActualizarPerfil(perfil);
+            perfilActual.AvatarUrl = avatarElegido;
 
-            // Forzar refresco visual
+            // Llamamos a la API para actualizar el avatar
+            await ApiRestFAFA.ModificarAvatar(perfilActual);
+
+            // Actualizamos visual
             this.BindingContext = null;
-            this.BindingContext = perfil;
+            this.BindingContext = perfilActual;
 
-            OnPropertyChanged();
+            // Cerramos el panel
+            await PanelAvatares.TranslateTo(0, 400, 250, Easing.CubicIn);
+            CapaFondo.IsVisible = false;
 
-
-            // Deseleccionar para la próxima vez
             ((CollectionView)sender).SelectedItem = null;
         }
     }
