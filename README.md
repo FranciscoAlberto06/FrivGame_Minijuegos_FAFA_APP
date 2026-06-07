@@ -1,4 +1,4 @@
-🎮 FrivGame — Plataforma de Minijuegos Multijugador
+🎮 FrivGame — Plataforma de Minijuegos
 
 <img width="1575" height="660" alt="image" src="https://github.com/user-attachments/assets/6751d170-aee1-4feb-b060-1c8ae016c157" />
 <img width="1918" height="921" alt="image" src="https://github.com/user-attachments/assets/250a703c-55ae-4068-a153-c3649444a598" />
