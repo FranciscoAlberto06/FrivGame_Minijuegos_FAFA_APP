@@ -6,7 +6,6 @@
 <img width="1919" height="960" alt="image" src="https://github.com/user-attachments/assets/c16e61bc-d94e-426e-a2b5-dca887beec68" />
 
 
-Mostrar imagen
 Aplicación nativa multiplataforma desarrollada con .NET MAUI para Android y Windows que ofrece una plataforma de minijuegos con ranking global en tiempo real, sistema de logros y funcionamiento híbrido online/offline.
 
 🚀 Características Principales
@@ -25,7 +24,14 @@ Seguridad: contraseñas cifradas con SHA256, API REST como intermediario
 
 
 🛠️ Tecnologías
-CapaTecnologíaFrontend.NET MAUI BackendASP.NET Core Web APIBD localSQLite (sqlite-net-pcl)BD en la nubeMySQL en AivenTiempo realSignalRHosting APIRailwayEmailSendGridControl de versionesGitHub
+Frontend → .NET MAUI 9.0
+Backend → ASP.NET Core Web API
+Base de datos local → SQLite (sqlite-net-pcl)
+Base de datos en la nube → MySQL en Aiven
+Comunicación en tiempo real → SignalR
+Hosting de la API → Railway
+Servicio de correo electrónico → SendGrid
+Control de versiones → GitHub
 
 📂 Estructura del Proyecto
 FrivGame_Minijuegos_FAFA_APP/
