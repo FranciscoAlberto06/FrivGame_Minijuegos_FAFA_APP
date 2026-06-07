@@ -38,8 +38,6 @@ Comunicación en tiempo real → SignalR
 
 Hosting de la API → Railway
 
-Servicio de correo electrónico → SendGrid
-
 Control de versiones → GitHub
 
 
