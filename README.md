@@ -26,23 +26,37 @@ Seguridad: contraseñas cifradas con SHA256, API REST como intermediario
 🛠️ Tecnologías
 
 Frontend → .NET MAUI 9.0
+
 Backend → ASP.NET Core Web API
+
 Base de datos local → SQLite (sqlite-net-pcl)
+
 Base de datos en la nube → MySQL en Aiven
+
 Comunicación en tiempo real → SignalR
+
 Hosting de la API → Railway
+
 Servicio de correo electrónico → SendGrid
+
 Control de versiones → GitHub
 
 📂 Estructura del Proyecto
 
 FrivGame_Minijuegos_FAFA_APP/
+
 ├── API/                    ──► API REST con ASP.NET Core y SignalR
+
 ├── BGestionFAFA/           ──► Clases de acceso a datos (SQLite y REST)
+
 ├── BModelosFAFA/           ──► Modelos de negocio
+
 ├── BModelosSQLFAFA/        ──► Modelos SQLite
+
 ├── BViewsFAFA/             ──► Componentes reutilizables (ContentViews)
+
 └── FrivGame_Minijuegos_FAFA_APP/  ──► Proyecto MAUI principal
+
 
 ⚙️ Aspectos Técnicos Destacados
 
