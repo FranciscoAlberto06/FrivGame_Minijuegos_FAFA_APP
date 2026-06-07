@@ -1,5 +1,5 @@
 🎮 FrivGame — Plataforma de Minijuegos Multijugador
-Mostrar imagen
+
 <img width="1575" height="660" alt="image" src="https://github.com/user-attachments/assets/6751d170-aee1-4feb-b060-1c8ae016c157" />
 <img width="1918" height="921" alt="image" src="https://github.com/user-attachments/assets/250a703c-55ae-4068-a153-c3649444a598" />
 <img width="745" height="971" alt="image" src="https://github.com/user-attachments/assets/a423d196-0f39-4519-b652-606601311871" />
