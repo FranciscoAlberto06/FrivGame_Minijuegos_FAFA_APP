@@ -24,6 +24,7 @@ Seguridad: contraseñas cifradas con SHA256, API REST como intermediario
 
 
 🛠️ Tecnologías
+
 Frontend → .NET MAUI 9.0
 Backend → ASP.NET Core Web API
 Base de datos local → SQLite (sqlite-net-pcl)
@@ -34,6 +35,7 @@ Servicio de correo electrónico → SendGrid
 Control de versiones → GitHub
 
 📂 Estructura del Proyecto
+
 FrivGame_Minijuegos_FAFA_APP/
 ├── API/                    ──► API REST con ASP.NET Core y SignalR
 ├── BGestionFAFA/           ──► Clases de acceso a datos (SQLite y REST)
@@ -43,6 +45,7 @@ FrivGame_Minijuegos_FAFA_APP/
 └── FrivGame_Minijuegos_FAFA_APP/  ──► Proyecto MAUI principal
 
 ⚙️ Aspectos Técnicos Destacados
+
 Sistema híbrido online/offline
 Las partidas jugadas sin conexión se guardan con IDs negativos temporales en SQLite. Al recuperar internet se sincronizan con la nube y obtienen su ID real.
 Ranking en tiempo real
@@ -51,4 +54,5 @@ Seguridad
 Las credenciales de la base de datos nunca están expuestas en la app cliente. Toda la comunicación pasa por la API REST desplegada en Railway donde las credenciales se almacenan como variables de entorno.
 
 👤 Autor
+
 Francisco Alberto — Proyecto Final de DAM 2025/2026
