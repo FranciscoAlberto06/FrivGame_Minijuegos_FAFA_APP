@@ -48,10 +48,15 @@ Control de versiones → GitHub
 FrivGame_Minijuegos_FAFA_APP/
 
 ├── API/                    ──► API REST con ASP.NET Core y SignalR
+
 ├── BGestionFAFA/           ──► Clases de acceso a datos (SQLite y REST)
+
 ├── BModelosFAFA/           ──► Modelos de negocio
+
 ├── BModelosSQLFAFA/        ──► Modelos SQLite
+
 ├── BViewsFAFA/             ──► Componentes reutilizables (ContentViews)
+
 └── FrivGame_Minijuegos_FAFA_APP/  ──► Proyecto MAUI principal
 
 
